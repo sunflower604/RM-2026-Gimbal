@@ -33,6 +33,8 @@
 #include <stdint.h> 
 #include "remote_control.h"
 #include "PID.h"
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -119,33 +121,39 @@ int main(void)
   Gimbal_Yaw_Small_Init();
 	
   extern PID_PositionInitTypedef TEST_SmallYaw_PositionPID;
+  extern PID_PositionInitTypedef Trigger_SpeedPID;
   extern PID_PositionInitTypedef TEST_SmallYaw_SpeedPID;
   extern float target_speed;
+	
+	//=================
+	Gimbal_Trigger_Init();
+	//=================
+	
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		UART2_SendNumber(local_rc_ctrl->rc.ch[0]+1024,4);//右摇杆左右
-		UART2_SendByte(',');
-		UART2_SendNumber(local_rc_ctrl->rc.ch[1]+1024,4);//右摇杆上下
-		UART2_SendByte(',');
+		//UART2_SendNumber(local_rc_ctrl->rc.ch[0]+1024,4);//右摇杆左右
+		//UART2_SendByte(',');
+		//UART2_SendNumber(local_rc_ctrl->rc.ch[1]+1024,4);//右摇杆上下
+		//UART2_SendByte(',');
 //		UART2_SendNumber(local_rc_ctrl->rc.ch[2]+1024,4);//左摇杆左右
 //		UART2_SendByte(',');
 //		UART2_SendNumber(local_rc_ctrl->rc.ch[3]+1024,4);//左摇杆上下
 //		UART2_SendByte(',');
 //		UART2_SendNumber(local_rc_ctrl->rc.ch[4]+1024,4);
 //		UART2_SendByte(',');
-//		UART2_SendNumber(local_rc_ctrl->rc.s[0],4);
-//		UART2_SendByte(',');
-//		UART2_SendNumber(local_rc_ctrl->rc.s[1],4);
-//		UART2_SendByte(',');
-
-
-		UART2_SendNumber((uint32_t)TEST_SmallYaw_SpeedPID.Need_Value,6);
+		UART2_SendNumber(local_rc_ctrl->rc.s[0],4);
 		UART2_SendByte(',');
-		UART2_SendNumber(motor_chassis[5].speed_rpm,6);
+		UART2_SendNumber(local_rc_ctrl->rc.s[1],4);
+		UART2_SendByte(',');
+
+
+		UART2_SendNumber((uint32_t)Trigger_SpeedPID.Need_Value,6);
+		UART2_SendByte(',');
+		UART2_SendNumber(motor_chassis[6].speed_rpm,6);
 
 
 		UART2_SendByte('\n');

@@ -1,7 +1,6 @@
-can\remote_control.o: ..\application\remote_control.c
-can\remote_control.o: ..\application\remote_control.h
+can\remote_control.o: ..\A-DEvice\remote_control.c
+can\remote_control.o: ..\A-DEvice\remote_control.h
 can\remote_control.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\stdint.h
-can\remote_control.o: ../bsp/boards/bsp_rc.h
 can\remote_control.o: ../Inc/main.h
 can\remote_control.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
 can\remote_control.o: ../Inc/stm32f4xx_hal_conf.h

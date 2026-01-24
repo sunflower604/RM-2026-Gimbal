@@ -278,8 +278,9 @@ void USART1_IRQHandler(void)
   */
 void TIM6_DAC_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
 	
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+	Gimbal_Trigger_Control();
 	Gimbal_Yaw_Small_Control();
   /* USER CODE END TIM6_DAC_IRQn 0 */
   HAL_TIM_IRQHandler(&htim6);

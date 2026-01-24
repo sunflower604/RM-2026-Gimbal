@@ -1,7 +1,6 @@
 #ifndef REMOTE_CONTROL_H
 #define REMOTE_CONTROL_H
 #include <stdint.h> 
-#include "bsp_rc.h"
 
 #define SBUS_RX_BUF_NUM 36u
 

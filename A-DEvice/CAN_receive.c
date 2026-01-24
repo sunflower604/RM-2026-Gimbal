@@ -41,11 +41,10 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
         {
             static uint8_t i = 0;
             //get motor id
-            i = rx_header.StdId - CAN_3508_M1_ID;
+            i = rx_header.StdId - CAN_3508_M1_ID;//-0x201
             get_motor_measure(&motor_chassis[i], rx_data);
             break;
         }
-
         default:
         {
             break;
@@ -53,39 +52,46 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     }
 }
 
-
-
-/**
-  * @brief          send control current of motor (0x205, 0x206, 0x207, 0x208)
-  * @param[in]      yaw: (0x205) 6020 motor control current, range [-30000,30000] 
-  * @param[in]      pitch: (0x206) 6020 motor control current, range [-30000,30000]
-  * @param[in]      shoot: (0x207) 2006 motor control current, range [-10000,10000]
-  * @param[in]      rev: (0x208) reserve motor control current
-  * @retval         none
-  */
-void CAN_cmd_gimbal(int16_t yaw, int16_t pitch, int16_t shoot, int16_t rev)
+//1ã€ 2ã€ 3ã€æ‘©æ“¦è½®1 4ã€æ‘©æ“¦è½®2 
+void CAN_cmd_gimbal(int16_t device1, int16_t device2, int16_t device3, int16_t device4)
 {
     uint32_t send_mail_box;
-    gimbal_tx_message.StdId = 0x1FF/*CAN_GIMBAL_ALL_ID*/;
+    gimbal_tx_message.StdId = CAN_GIMBAL_ALL_ID;//0x1FF
     gimbal_tx_message.IDE = CAN_ID_STD;
     gimbal_tx_message.RTR = CAN_RTR_DATA;
     gimbal_tx_message.DLC = 0x08;
-    gimbal_can_send_data[0] = (yaw >> 8);
-    gimbal_can_send_data[1] = yaw;
-    gimbal_can_send_data[2] = (pitch >> 8);
-    gimbal_can_send_data[3] = pitch;
-    gimbal_can_send_data[4] = (shoot >> 8);
-    gimbal_can_send_data[5] = shoot;
-    gimbal_can_send_data[6] = (rev >> 8);
-    gimbal_can_send_data[7] = rev;
+    gimbal_can_send_data[0] = (device1 >> 8);
+    gimbal_can_send_data[1] = device1;
+    gimbal_can_send_data[2] = (device2 >> 8);
+    gimbal_can_send_data[3] = device2;
+    gimbal_can_send_data[4] = (device3 >> 8);
+    gimbal_can_send_data[5] = device3;
+    gimbal_can_send_data[6] = (device4 >> 8);
+    gimbal_can_send_data[7] = device4;
     HAL_CAN_AddTxMessage(&hcan1, &gimbal_tx_message, gimbal_can_send_data, &send_mail_box);
 }
 
-/**
-  * @brief          send CAN packet of ID 0x700, it will set chassis motor 3508 to quick ID setting
-  * @param[in]      none
-  * @retval         none
-  */
+void CAN_cmd_gimbal2(int16_t device1, int16_t device2, int16_t device3, int16_t device4)
+{
+    uint32_t send_mail_box;
+    gimbal_tx_message.StdId = 0x1FF;//0x2FF
+    gimbal_tx_message.IDE = CAN_ID_STD;
+    gimbal_tx_message.RTR = CAN_RTR_DATA;
+    gimbal_tx_message.DLC = 0x08;
+    gimbal_can_send_data[0] = (device1 >> 8);
+    gimbal_can_send_data[1] = device1;
+    gimbal_can_send_data[2] = (device2 >> 8);
+    gimbal_can_send_data[3] = device2;
+    gimbal_can_send_data[4] = (device3 >> 8);
+    gimbal_can_send_data[5] = device3;
+    gimbal_can_send_data[6] = (device4 >> 8);
+    gimbal_can_send_data[7] = device4;
+    HAL_CAN_AddTxMessage(&hcan1, &gimbal_tx_message, gimbal_can_send_data, &send_mail_box);
+}
+
+
+
+
 void CAN_cmd_chassis_reset_ID(void)
 {
     uint32_t send_mail_box;
@@ -106,18 +112,10 @@ void CAN_cmd_chassis_reset_ID(void)
 }
 
 
-/**
-  * @brief          send control current of motor (0x201, 0x202, 0x203, 0x204)
-  * @param[in]      motor1: (0x201) 3508 motor control current, range [-16384,16384] 
-  * @param[in]      motor2: (0x202) 3508 motor control current, range [-16384,16384] 
-  * @param[in]      motor3: (0x203) 3508 motor control current, range [-16384,16384] 
-  * @param[in]      motor4: (0x204) 3508 motor control current, range [-16384,16384] 
-  * @retval         none
-  */
 void CAN_cmd_chassis(int16_t motor1, int16_t motor2, int16_t motor3, int16_t motor4)
 {
     uint32_t send_mail_box;
-    chassis_tx_message.StdId = CAN_CHASSIS_ALL_ID;
+    chassis_tx_message.StdId = CAN_CHASSIS_ALL_ID;//0x200
     chassis_tx_message.IDE = CAN_ID_STD;
     chassis_tx_message.RTR = CAN_RTR_DATA;
     chassis_tx_message.DLC = 0x08;
@@ -133,48 +131,21 @@ void CAN_cmd_chassis(int16_t motor1, int16_t motor2, int16_t motor3, int16_t mot
     HAL_CAN_AddTxMessage(&CHASSIS_CAN, &chassis_tx_message, chassis_can_send_data, &send_mail_box);
 }
 
-/**
-  * @brief          return the yaw 6020 motor data point
-  * @param[in]      none
-  * @retval         motor data point
-  */
 const motor_measure_t *get_yaw_gimbal_motor_measure_point(void)
 {
     return &motor_chassis[4];
 }
 
-/**
-  * @brief          return the pitch 6020 motor data point
-  * @param[in]      none
-  * @retval         motor data point
-  */
 const motor_measure_t *get_pitch_gimbal_motor_measure_point(void)
 {
     return &motor_chassis[5];
 }
 
-
-/**
-  * @brief          return the trigger 2006 motor data point
-  * @param[in]      none
-  * @retval         motor data point
-  */
-/**
-  * @brief          ·µ»Ø²¦µ¯µç»ú 2006µç»úÊý¾ÝÖ¸Õë
-  * @param[in]      none
-  * @retval         µç»úÊý¾ÝÖ¸Õë
-  */
 const motor_measure_t *get_trigger_motor_measure_point(void)
 {
     return &motor_chassis[6];
 }
 
-
-/**
-  * @brief          return the chassis 3508 motor data point
-  * @param[in]      i: motor number,range [0,3]
-  * @retval         motor data point
-  */
 const motor_measure_t *get_chassis_motor_measure_point(uint8_t i)
 {
     return &motor_chassis[(i & 0x03)];

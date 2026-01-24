@@ -1,5 +1,5 @@
-can\bsp_usart.o: bsp_usart.c
-can\bsp_usart.o: bsp_usart.h
+can\bsp_usart.o: ..\A-Driver\bsp_usart.c
+can\bsp_usart.o: ..\A-Driver\bsp_usart.h
 can\bsp_usart.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\stdint.h
 can\bsp_usart.o: ../Inc/usart.h
 can\bsp_usart.o: ../Inc/main.h

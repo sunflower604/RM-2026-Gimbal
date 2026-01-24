@@ -1,5 +1,5 @@
-can\bsp_can.o: ..\bsp\boards\bsp_can.c
-can\bsp_can.o: ..\bsp\boards\bsp_can.h
+can\bsp_can.o: ..\A-Driver\bsp_can.c
+can\bsp_can.o: ..\A-Driver\bsp_can.h
 can\bsp_can.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\stdint.h
 can\bsp_can.o: ../Inc/main.h
 can\bsp_can.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h

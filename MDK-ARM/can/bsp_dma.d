@@ -1,5 +1,5 @@
-can\bsp_dma.o: ..\bsp\boards\bsp_dma.c
-can\bsp_dma.o: ..\bsp\boards\bsp_dma.h
+can\bsp_dma.o: ..\A-Driver\bsp_dma.c
+can\bsp_dma.o: ..\A-Driver\bsp_dma.h
 can\bsp_dma.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\stdint.h
 can\bsp_dma.o: ../Inc/main.h
 can\bsp_dma.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h

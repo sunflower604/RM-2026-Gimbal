@@ -39,7 +39,7 @@ static uint8_t sbus_rx_buf[2][SBUS_RX_BUF_NUM];
   */
 void remote_control_init(void)
 {
-    Remote_DMA_init(sbus_rx_buf[0], sbus_rx_buf[1], SBUS_RX_BUF_NUM);
+    Dbus_Dma_Init(sbus_rx_buf[0], sbus_rx_buf[1], SBUS_RX_BUF_NUM);
 }
 /**
   * @brief          get remote control data point

@@ -4,7 +4,7 @@
 extern UART_HandleTypeDef huart3;
 extern DMA_HandleTypeDef hdma_usart3_rx;
 
-void Remote_DMA_init(uint8_t *rx1_buf, uint8_t *rx2_buf, uint16_t dma_buf_num)
+void Dbus_Dma_Init(uint8_t *rx1_buf, uint8_t *rx2_buf, uint16_t dma_buf_num)
 {
     //enable the DMA transfer for the receiver request
     SET_BIT(huart3.Instance->CR3, USART_CR3_DMAR);

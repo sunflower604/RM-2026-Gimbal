@@ -1,5 +1,5 @@
-can\can_receive.o: ..\application\CAN_receive.c
-can\can_receive.o: ..\application\CAN_receive.h
+can\can_receive.o: ..\A-DEvice\CAN_receive.c
+can\can_receive.o: ..\A-DEvice\CAN_receive.h
 can\can_receive.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\stdint.h
 can\can_receive.o: ../Inc/main.h
 can\can_receive.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
