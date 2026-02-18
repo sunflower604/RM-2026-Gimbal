@@ -1,10 +1,14 @@
 #include "Motor.h"
+
 M3508_Motor Can1_M3508_MotorStatus[8];//M3508电机状态数组
 M3508_Motor Can2_M3508_MotorStatus[8];//M3508电机状态数组
 M6020_Motor Can1_M6020_MotorStatus[7];//GM6020电机状态数组
 M6020_Motor Can2_M6020_MotorStatus[7];//GM6020电机状态数组
 M2006_Motor Can1_M2006_MotorStatus[8];//M2006电机状态数组
 M2006_Motor Can2_M2006_MotorStatus[8];//M2006电机状态数组
+#define MOTOR_ENCODER_ECD_MAX 8192.0f
+#define MOTOR_ENCODER_HALF_ECD_MAX 4096.0f
+
 
 void Motor_3508_Current1(	int16_t device1, int16_t device2, 
 													int16_t device3, int16_t device4, 
@@ -167,12 +171,15 @@ void CAN1_M6020_DataProcess(M6020_ID ID,uint8_t *Data)
 	else if(Can1_M6020_MotorStatus[ID-0x205].First_Flag!=1)
 		Can1_M6020_MotorStatus[ID-0x205].First_Flag++;
 
-	Can1_M6020_MotorStatus[ID-0x205].Angle=GM6020_NowAngle;//机械角度
-	Can1_M6020_MotorStatus[ID-0x205].Position=8192*Can1_M6020_MotorStatus[ID-0x205].r+GM6020_NowAngle;//角度位置
-	Can1_M6020_MotorStatus[ID-0x205].Speed=(int16_t)((((uint16_t)Data[2])<<8)|Data[3]);//转速
-	Can1_M6020_MotorStatus[ID-0x205].Current=(int16_t)((((uint16_t)Data[4])<<8)|Data[5]);//实际转矩电流
+	Can1_M6020_MotorStatus[ID-0x205].Angle			=GM6020_NowAngle;//机械角度
+	Can1_M6020_MotorStatus[ID-0x205].ANgle			=GM6020_NowAngle/8192.0f*360.0f;//机械角度
+		if(Can1_M6020_MotorStatus[ID-0x205].ANgle > 180) Can1_M6020_MotorStatus[ID-0x205].ANgle -= 360.0f;
+		else if(Can1_M6020_MotorStatus[ID-0x205].ANgle < -180) Can1_M6020_MotorStatus[ID-0x205].ANgle += 360.0f;
+	Can1_M6020_MotorStatus[ID-0x205].Position		=8192*Can1_M6020_MotorStatus[ID-0x205].r+GM6020_NowAngle;//角度位置
+	Can1_M6020_MotorStatus[ID-0x205].Speed			=(int16_t)((((uint16_t)Data[2])<<8)|Data[3]);//转速
+	Can1_M6020_MotorStatus[ID-0x205].Current		=(int16_t)((((uint16_t)Data[4])<<8)|Data[5]);//实际转矩电流
 	Can1_M6020_MotorStatus[ID-0x205].Temperature=Data[6];//电机温度
-}
+}	
 
 void CAN2_M6020_DataProcess(M6020_ID ID,uint8_t *Data)
 {
@@ -185,10 +192,13 @@ void CAN2_M6020_DataProcess(M6020_ID ID,uint8_t *Data)
 	else if(Can2_M6020_MotorStatus[ID-0x205].First_Flag!=1)
 		Can2_M6020_MotorStatus[ID-0x205].First_Flag++;
 
-	Can2_M6020_MotorStatus[ID-0x205].Angle=GM6020_NowAngle;//机械角度
-	Can2_M6020_MotorStatus[ID-0x205].Position=8192*Can2_M6020_MotorStatus[ID-0x205].r+GM6020_NowAngle;//角度位置
-	Can2_M6020_MotorStatus[ID-0x205].Speed=(int16_t)((((uint16_t)Data[2])<<8)|Data[3]);//转速
-	Can2_M6020_MotorStatus[ID-0x205].Current=(int16_t)((((uint16_t)Data[4])<<8)|Data[5]);//实际转矩电流
+	Can2_M6020_MotorStatus[ID-0x205].Angle			=GM6020_NowAngle;//机械角度
+	Can2_M6020_MotorStatus[ID-0x205].ANgle			=GM6020_NowAngle/8192.0f*360.0f;//机械角度
+		if(Can2_M6020_MotorStatus[ID-0x205].ANgle > 180) Can2_M6020_MotorStatus[ID-0x205].ANgle -= 360.0f;
+		else if(Can2_M6020_MotorStatus[ID-0x205].ANgle < -180) Can2_M6020_MotorStatus[ID-0x205].ANgle += 360.0f;
+	Can2_M6020_MotorStatus[ID-0x205].Position		=8192*Can2_M6020_MotorStatus[ID-0x205].r+GM6020_NowAngle;//角度位置
+	Can2_M6020_MotorStatus[ID-0x205].Speed			=(int16_t)((((uint16_t)Data[2])<<8)|Data[3]);//转速
+	Can2_M6020_MotorStatus[ID-0x205].Current		=(int16_t)((((uint16_t)Data[4])<<8)|Data[5]);//实际转矩电流
 	Can2_M6020_MotorStatus[ID-0x205].Temperature=Data[6];//电机温度
 }
 
@@ -290,3 +300,20 @@ void CAN2_M2006_DataProcess(M2006_ID ID,uint8_t *Data)
 	Can2_M2006_MotorStatus[ID-0x201].Power=Can2_M2006_MotorStatus[ID-0x201].ShaftSpeed*Can2_M2006_MotorStatus[ID-0x201].Current*0.018848167539267f;//=Can2_M2006_MotorStatus[ID-0x201].ShaftSpeed*Can2_M2006_MotorStatus[ID-0x201].Current*M2006_TorqueConstant/9.55f;//电机功率(功率P(kW)=转轴转速v(RPM)*转矩T(N·m)/9550,转矩T=转矩电流*转矩常数)
 	if(Can2_M2006_MotorStatus[ID-0x201].Power<0)Can2_M2006_MotorStatus[ID-0x201].Power*=-1;//功率去负数化
 }
+
+
+float Motor_Encoder_Circle(float target_angle, float current_encoder_angle)
+{
+    float err = target_angle - current_encoder_angle;
+
+    if (err > MOTOR_ENCODER_HALF_ECD_MAX) {
+        // 当前值落后一圈或多圈，加一个最大值使其追上
+        current_encoder_angle += MOTOR_ENCODER_ECD_MAX;
+    } else if (err < -MOTOR_ENCODER_HALF_ECD_MAX) {
+        // 当前值超前一圈或多圈，减一个最大值使其退回
+        current_encoder_angle -= MOTOR_ENCODER_ECD_MAX;
+    }
+    // 如果误差在范围内，则 current_encoder_angle 不变
+    return current_encoder_angle;
+}
+

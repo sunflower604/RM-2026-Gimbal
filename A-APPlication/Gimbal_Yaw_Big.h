@@ -4,6 +4,7 @@
 #include "bsp_can.h"
 #include "Remote.h"
 #include "Motor.h"
+#include "BMI088.h"
 
 void Gimbal_YawBig_Init(void);
 void Gimbal_YawBig_Control(void);

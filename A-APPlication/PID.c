@@ -109,7 +109,9 @@ void PID_PositionClean(PID_PositionInitTypedef* PID_InitStructure)
  *备注:计算结果保存在位置式PID参数结构体中
  */
 void PID_PositionCalc(PID_PositionInitTypedef* PID_InitStructure,float NowValue)
-{	//===============更新基本数据===============//
+{	
+	float eksum_speed = 1;//变速积分参数
+	//===============更新基本数据===============//
 	PID_InitStructure->Now_Value 	= NowValue;
 	PID_InitStructure->Ek_Last 		= PID_InitStructure->Ek;
 	PID_InitStructure->Ek 				= PID_InitStructure->Need_Value - PID_InitStructure->Now_Value;
@@ -118,8 +120,11 @@ void PID_PositionCalc(PID_PositionInitTypedef* PID_InitStructure,float NowValue)
 	if(PID_InitStructure->Ek_Min < PID_InitStructure->Ek && PID_InitStructure->Ek < PID_InitStructure->Ek_Max)//误差为0检测
 	{
 		PID_InitStructure->Ek = 0;
-	}	
-	PID_InitStructure->Ek_Sum += PID_InitStructure->Ek;
+	}
+	//===============变速积分===============//
+	eksum_speed = 1/( 1 * fabs(PID_InitStructure->Ek)+1);
+	PID_InitStructure->Ek_Sum += eksum_speed*PID_InitStructure->Ek;
+//	PID_InitStructure->Ek_Sum += PID_InitStructure->Ek;
 	//===============误差积分限幅===============//
 	if(PID_InitStructure->Ek_Sum > PID_InitStructure->Ek_Sum_Max)
 		PID_InitStructure->Ek_Sum = PID_InitStructure->Ek_Sum_Max;
@@ -137,35 +142,41 @@ void PID_PositionCalc(PID_PositionInitTypedef* PID_InitStructure,float NowValue)
 		PID_InitStructure->OUT = PID_InitStructure->OUT_Max;
 }
 
-void PID_PositionCalcTEST(PID_PositionInitTypedef* PID_InitStructure,float NowValue)
-{
+void PID_PositionCalc_Encoder(PID_PositionInitTypedef* PID_InitStructure,float NowValue)
+{	
+	//===============更新基本数据===============//
 	PID_InitStructure->Now_Value = NowValue;
-
+	PID_InitStructure->Ek_Last = PID_InitStructure->Ek;
   float err = PID_InitStructure->Need_Value - PID_InitStructure->Now_Value;
-  if (err > Motor_ECD_MAX) {          // 8192 / 2 = 4096
+  if (err > Motor_ECD_MAX/2) {          // 8192 / 2 = 4096
       err -= Motor_ECD_MAX;
-  } else if (err < -Motor_ECD_MAX) {
+  } else if (err < -Motor_ECD_MAX/2) {
       err += Motor_ECD_MAX;
   }
-
-	PID_InitStructure->Ek_Last = PID_InitStructure->Ek;
 	PID_InitStructure->Ek = err;
+	PID_InitStructure->Ek_Del = PID_InitStructure->Ek - PID_InitStructure->Ek_Last;//误差差分
 
+	//===============误差死区===============//
 	if(PID_InitStructure->Ek_Min < PID_InitStructure->Ek && PID_InitStructure->Ek < PID_InitStructure->Ek_Max)//误差为0检测
 	{
 		PID_InitStructure->Ek = 0;
 	}	
 	PID_InitStructure->Ek_Sum += PID_InitStructure->Ek;
-	PID_InitStructure->Ek_Del = PID_InitStructure->Ek - PID_InitStructure->Ek_Last;//误差差分
-
+	//===============误差积分限幅===============//
+	if(PID_InitStructure->Ek_Sum > PID_InitStructure->Ek_Sum_Max)
+		PID_InitStructure->Ek_Sum = PID_InitStructure->Ek_Sum_Max;
+	if(PID_InitStructure->Ek_Sum < PID_InitStructure->Ek_Sum_Min)
+		PID_InitStructure->Ek_Sum = PID_InitStructure->Ek_Sum_Min;
+	//===============计算pid各项输出及总输出===============//
 	PID_InitStructure->P_OUT = PID_InitStructure->Kp * PID_InitStructure->Ek;
 	PID_InitStructure->I_OUT = PID_InitStructure->Ki * PID_InitStructure->Ek_Sum;
 	PID_InitStructure->D_OUT = PID_InitStructure->Kd * PID_InitStructure->Ek_Del;
-	PID_InitStructure->OUT = PID_InitStructure->P_OUT + PID_InitStructure->I_OUT + PID_InitStructure->D_OUT;
+	PID_InitStructure->OUT	 = PID_InitStructure->P_OUT + PID_InitStructure->I_OUT + PID_InitStructure->D_OUT;
 	
-	if(PID_InitStructure->OUT<PID_InitStructure->OUT_Min)//输出限幅
+	//===============输出限幅===============//
+	if(PID_InitStructure->OUT < PID_InitStructure->OUT_Min)//输出限幅
 		PID_InitStructure->OUT = PID_InitStructure->OUT_Min;
-	if(PID_InitStructure->OUT>PID_InitStructure->OUT_Max)
+	if(PID_InitStructure->OUT > PID_InitStructure->OUT_Max)
 		PID_InitStructure->OUT = PID_InitStructure->OUT_Max;
 }
 

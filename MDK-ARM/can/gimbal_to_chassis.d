@@ -1,6 +1,7 @@
 can\gimbal_to_chassis.o: ..\A-APPlication\Gimbal_to_Chassis.c
 can\gimbal_to_chassis.o: ..\A-APPlication\Gimbal_to_Chassis.h
 can\gimbal_to_chassis.o: ..\A-APPlication\PID.h
+can\gimbal_to_chassis.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\math.h
 can\gimbal_to_chassis.o: ../A-DEvice/Motor.h
 can\gimbal_to_chassis.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\stdint.h
 can\gimbal_to_chassis.o: ../Inc/can.h
@@ -31,12 +32,17 @@ can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_can.h
 can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash.h
 can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ex.h
 can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ramfunc.h
+can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_i2c.h
+can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_i2c_ex.h
 can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_iwdg.h
 can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h
 can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h
+can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h
 can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 can\gimbal_to_chassis.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 can\gimbal_to_chassis.o: ../A-DEvice/Remote.h
 can\gimbal_to_chassis.o: ../A-Driver/bsp_usart.h
+can\gimbal_to_chassis.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\stdio.h
+can\gimbal_to_chassis.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\string.h
 can\gimbal_to_chassis.o: ../Inc/usart.h

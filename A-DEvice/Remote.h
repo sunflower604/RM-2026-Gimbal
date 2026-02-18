@@ -2,6 +2,7 @@
 #define REMOTE_CONTROL_H
 #include <stdint.h> 
 #include "bsp_usart.h"
+#include "can.h"
 
 #define SBUS_RX_BUF_NUM 36u
 
@@ -63,5 +64,12 @@ typedef __packed struct
 extern const RC_ctrl_t *remote_GetControlPoint(void);
 void Remote_Init(void);//遥控器初始化
 void Remote_UART_IDLE_Callback(void);
+#include <stdint.h>
+#include "can.h"
+
+
+void CToC_MasterSendData(	int16_t data1, int16_t data2, 
+													int16_t data3, int16_t data4, 
+													CAN_HandleTypeDef *hcan);
 
 #endif

@@ -3,19 +3,18 @@
         {
             "name": "can",
             "includePath": [
-                "c:\\Users\\32762\\Desktop\\RM-2026RM\\Inc",
-                "c:\\Users\\32762\\Desktop\\RM-2026RM\\Drivers\\STM32F4xx_HAL_Driver\\Inc",
-                "c:\\Users\\32762\\Desktop\\RM-2026RM\\Drivers\\STM32F4xx_HAL_Driver\\Inc\\Legacy",
-                "c:\\Users\\32762\\Desktop\\RM-2026RM\\Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
-                "c:\\Users\\32762\\Desktop\\RM-2026RM\\Drivers\\CMSIS\\Include",
-                "c:\\Users\\32762\\Desktop\\RM-2026RM\\application",
-                "c:\\Users\\32762\\Desktop\\RM-2026RM\\bsp\\boards",
-                "c:\\Users\\32762\\Desktop\\RM-2026RM\\A-Calculate",
-                "c:\\Users\\32762\\Desktop\\RM-2026RM\\A-Hardware",
+                "c:\\Users\\32762\\Desktop\\RM-2026-Gimbal\\Inc",
+                "c:\\Users\\32762\\Desktop\\RM-2026-Gimbal\\Drivers\\STM32F4xx_HAL_Driver\\Inc",
+                "c:\\Users\\32762\\Desktop\\RM-2026-Gimbal\\Drivers\\STM32F4xx_HAL_Driver\\Inc\\Legacy",
+                "c:\\Users\\32762\\Desktop\\RM-2026-Gimbal\\Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+                "c:\\Users\\32762\\Desktop\\RM-2026-Gimbal\\Drivers\\CMSIS\\Include",
+                "c:\\Users\\32762\\Desktop\\RM-2026-Gimbal\\A-APPlication",
+                "c:\\Users\\32762\\Desktop\\RM-2026-Gimbal\\A-DEvice",
+                "c:\\Users\\32762\\Desktop\\RM-2026-Gimbal\\A-Driver",
                 "D:\\keil5\\ARM\\ARMCC\\include",
-                "c:\\Users\\32762\\Desktop\\RM-2026RM\\MDK-ARM",
-                "c:\\Users\\32762\\Desktop\\RM-2026RM\\Src",
-                "c:\\Users\\32762\\Desktop\\RM-2026RM\\Drivers\\STM32F4xx_HAL_Driver\\Src"
+                "c:\\Users\\32762\\Desktop\\RM-2026-Gimbal\\MDK-ARM",
+                "c:\\Users\\32762\\Desktop\\RM-2026-Gimbal\\Src",
+                "c:\\Users\\32762\\Desktop\\RM-2026-Gimbal\\Drivers\\STM32F4xx_HAL_Driver\\Src"
             ],
             "defines": [
                 "USE_HAL_DRIVER",

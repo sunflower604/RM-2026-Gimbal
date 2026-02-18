@@ -1,6 +1,8 @@
 #ifndef BSP_USART_H
 #define BSP_USART_H
 #include <stdint.h> 
+#include <stdio.h>
+#include <string.h>
 #include "usart.h"
 #include "main.h"
 extern void usart1_tx_dma_init(void);
@@ -26,6 +28,8 @@ void UART2_SendByte(uint8_t Byte);
 void UART2_SendArray(uint8_t *Array,uint16_t Length);
 void UART2_SendString(char *String);
 void UART2_SendNumber(uint32_t Number,uint8_t Length);
+void UART2_SendNumber_Sign(int32_t Number, uint8_t Length);
+void UART2_SendFloat_Sign(float value, uint8_t decimal_places);
 //void UART2_Printf(char *format,...);
 uint32_t USART_Pow(uint32_t X, uint32_t Y);
 //uint8_t UART2_GetRxFlag(void);

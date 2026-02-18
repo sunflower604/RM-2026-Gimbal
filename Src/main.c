@@ -21,7 +21,9 @@
 #include "main.h"
 #include "can.h"
 #include "dma.h"
+#include "i2c.h"
 #include "iwdg.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -36,11 +38,13 @@
 #include "Remote.h"
 #include "PID.h"
 #include "Gimbal_Yaw_Small.h"
-#include "Gimbal_to_Chassis.h"
 #include "Gimbal_Trigger.h"
 #include "Gimbal_Shoot.h"
 #include "Gimbal_Pitch.h"
-
+#include "Gimbal_PoseCalc.h"
+#include "ist8310driver.h"
+#include "BMI088.h"
+#include "BMI088driver.h"
 
 
 /* USER CODE END Includes */
@@ -66,17 +70,20 @@
 
 
 extern uint8_t rx_data[8];//can_receive.c
-extern motor_measure_t Can1_Rx_Data[8];
-extern motor_measure_t Can2_Rx_Data[8];
 extern PID_PositionInitTypedef Trigger_SpeedPID;
+extern PID_PositionInitTypedef BigYaw_SpeedPID;
+extern PID_PositionInitTypedef BigYaw_PositionPID;
 extern PID_PositionInitTypedef SmallYaw_SpeedPID;
 extern PID_PositionInitTypedef SmallYaw_PositionPID;
+extern PID_PositionInitTypedef SmallYaw_GyroscopePID;
 extern PID_PositionInitTypedef ShootLeft_SpeedPID;
 extern PID_PositionInitTypedef ShootRight_SpeedPID;
 extern RC_ctrl_t *local_rc_ctrl;		
+extern BMI088_Init_typedef BMI088_Data;
+extern BMI088_Init_typedef Can_BMI088_Data;
+extern BMI088_Init_typedef BigYaw_BMI088_Data;		//大yaw轴解算的陀螺仪数据
+extern BMI088_Init_typedef SmallYaw_BMI088_Data;	//小yaw轴解算的陀螺仪数据
 
-uint16_t RC_Rx_Len = 0;
-uint8_t  RC_Rx_Flag = 0;
 uint8_t rx_byte;
 /* USER CODE END PV */
 
@@ -89,6 +96,14 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+	void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+	{
+			if(GPIO_Pin == IST8310_DRDY_Pin)
+			{
+//					ist8310_read_mag(mag);
+			}
+	
+	}
 /* USER CODE END 0 */
 
 /**
@@ -106,6 +121,7 @@ int main(void)
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
@@ -126,17 +142,25 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM6_Init();
 //  MX_IWDG_Init();
+  MX_I2C3_Init();
+  MX_SPI1_Init();
+  MX_TIM10_Init();
   /* USER CODE BEGIN 2 */
 	HAL_TIM_Base_Start_IT(&htim6);
   Can_Filter_Init();
 	
   Remote_Init();
-  Gimbal_Yaw_Small_Init();
+  Gimbal_YawSmall_Init();
+  Gimbal_YawBig_Init();
 	Gimbal_Trigger_Init();
 	Gimbal_Shoot_Init();
 	Gimbal_Pitch_Init();
 	
 	//=================
+  ist8310_init();
+	
+	UART2_SendString("RM GOOOO!");
+	
 	//=================
 	
   /* USER CODE END 2 */
@@ -145,6 +169,18 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		
+		Gimbal_PoseCalc();
+// ============磁力计和陀螺仪数据============
+//		UART2_SendByte(',');
+		UART2_SendFloat_Sign(Can_BMI088_Data.Yaw,4);
+		UART2_SendByte(',');
+		UART2_SendFloat_Sign(BigYaw_BMI088_Data.Yaw,4);
+		UART2_SendByte(',');
+		UART2_SendFloat_Sign(SmallYaw_BMI088_Data.Yaw,4);
+		UART2_SendByte(',');
+		// ============遥控器数据============
+		{
 //		UART2_SendNumber(local_rc_ctrl->rc.ch[0]+1024,4);//右摇杆左右
 //		UART2_SendByte(',');
 //		UART2_SendNumber(local_rc_ctrl->rc.ch[1]+1024,4);//右摇杆上下
@@ -159,9 +195,19 @@ int main(void)
 //		UART2_SendByte(',');
 //		UART2_SendNumber(local_rc_ctrl->rc.s[1],4);
 //		UART2_SendByte(',');
+		}
 
-
-//		UART2_SendNumber(SmallYaw_SpeedPID.Need_Value,4);
+		// ============电机PID数据============
+		{
+//		UART2_SendNumber(BigYaw_SpeedPID.Need_Value,4);//大yaw
+//		UART2_SendByte(',');
+//		UART2_SendNumber(BigYaw_SpeedPID.Now_Value,4);
+//		UART2_SendByte(',');
+//		UART2_SendNumber(BigYaw_PositionPID.Need_Value,4);
+//		UART2_SendByte(',');
+//		UART2_SendNumber(BigYaw_PositionPID.Now_Value,4);
+//		UART2_SendByte(',');
+//		UART2_SendNumber(SmallYaw_SpeedPID.Need_Value,4);//小waw
 //		UART2_SendByte(',');
 //		UART2_SendNumber(SmallYaw_SpeedPID.Now_Value,4);
 //		UART2_SendByte(',');
@@ -169,14 +215,21 @@ int main(void)
 //		UART2_SendByte(',');
 //		UART2_SendNumber(SmallYaw_PositionPID.Now_Value,4);
 //		UART2_SendByte(',');
-		UART2_SendNumber(ShootRight_SpeedPID.Need_Value,4);
+		UART2_SendFloat_Sign(SmallYaw_GyroscopePID.Need_Value,4);
 		UART2_SendByte(',');
-		UART2_SendNumber(ShootRight_SpeedPID.Now_Value,4);
-		UART2_SendByte(',');
-		UART2_SendNumber(ShootLeft_SpeedPID.Need_Value,4);
-		UART2_SendByte(',');
-		UART2_SendNumber(ShootRight_SpeedPID.Now_Value,4);
-
+		UART2_SendFloat_Sign(SmallYaw_GyroscopePID.Now_Value,4);
+//		UART2_SendByte(',');
+//		UART2_SendNumber(ShootRight_SpeedPID.Need_Value,4);//发射机构
+//		UART2_SendByte(',');
+//		UART2_SendNumber(ShootRight_SpeedPID.Now_Value,4);
+//		UART2_SendByte(',');
+//		UART2_SendNumber(ShootLeft_SpeedPID.Need_Value,4);
+//		UART2_SendByte(',');
+//		UART2_SendNumber(ShootRight_SpeedPID.Now_Value,4);
+//		UART2_SendByte(',');
+//		UART2_SendNumber(Trigger_SpeedPID.Need_Value,4);//拨弹盘
+//		UART2_SendByte(',');
+		}
 
 extern M3508_Motor Can1_M3508_MotorStatus[8];//M3508电机状态数组
 extern M3508_Motor Can2_M3508_MotorStatus[8];//M3508电机状态数组
@@ -185,12 +238,9 @@ extern M6020_Motor Can2_M6020_MotorStatus[7];//GM6020电机状态数组
 extern M2006_Motor Can1_M2006_MotorStatus[8];//M2006电机状态数组
 extern M2006_Motor Can2_M2006_MotorStatus[8];//M2006电机状态数组
 
-//		UART2_SendNumber(Trigger_SpeedPID.Need_Value,4);
-//		UART2_SendByte(',');
-//		UART2_SendNumber(Can1_M2006_MotorStatus[6].RotorSpeed,4);
 
 		UART2_SendByte('\n');
-		HAL_Delay(10);
+//		HAL_Delay(10);
 		
 
     /* USER CODE END WHILE */
@@ -247,6 +297,75 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+    CAN_RxHeaderTypeDef rx_header;
+    uint8_t rx_data[8];
+
+    // 读取接收到的消息
+    if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rx_header, rx_data) != HAL_OK)
+        return; // 安全检查
+
+    // 只处理标准帧
+    if (rx_header.IDE != CAN_ID_STD)
+        return;
+
+    // 根据 CAN 外设实例区分总线
+    if (hcan == &hcan1)
+    {
+        switch (rx_header.StdId)
+			{
+					case 0x201:
+							CAN1_M3508_DataProcess(0x201,rx_data);break;
+					case 0x202:
+							CAN1_M3508_DataProcess(0x202,rx_data);break;
+					case 0x203:
+							break;
+					case 0x204:
+							break;
+					case 0x205:
+							break;
+					case 0x206:
+							CAN1_M6020_DataProcess(0x206,rx_data);break;
+					case 0x207:
+							CAN1_M2006_DataProcess(0x207,rx_data);break;
+					case 0x208:
+							break;
+					default:
+					{
+							break;
+					}
+			}
+    }
+    else if (hcan == &hcan2)
+    {
+				switch (rx_header.StdId)
+			{
+					case 0x201:
+							break;
+					case 0x202:
+							break;
+					case 0x203:
+							break;
+					case 0x204:
+							break;
+					case 0x205:
+							CAN2_M6020_DataProcess(0x205,rx_data);break;
+					case 0x206:
+							CAN2_M6020_DataProcess(0x206,rx_data);break;
+					case 0x207:
+							break;
+					case 0x208:
+							break;
+					case 0x146:
+							CToC_AngleProcess(0x146,rx_data,&Can_BMI088_Data);break;
+					default:
+					{
+							break;
+					}
+			}
+    }
+}
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {

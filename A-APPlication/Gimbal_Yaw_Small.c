@@ -3,17 +3,27 @@
 #define SMALLYAW_LEFT 1650          //小yaw轴左侧最大偏移
 #define SMALLYAW_RIGHT 1650          //小yaw轴右侧最大偏移（顺时针减小）
 
+PID_PositionInitTypedef SmallYaw_GyroscopePID;
 PID_PositionInitTypedef SmallYaw_PositionPID;
 PID_PositionInitTypedef SmallYaw_SpeedPID;
-extern motor_measure_t Can2_Rx_Data[7];
+extern BMI088_Init_typedef BMI088_Data;
+extern BMI088_Init_typedef Can_BMI088_Data;
+extern BMI088_Init_typedef BigYaw_BMI088_Data;
+extern BMI088_Init_typedef SmallYaw_BMI088_Data;
+extern M6020_Motor Can1_M6020_MotorStatus[7];//GM6020电机状态数组
+extern M6020_Motor Can2_M6020_MotorStatus[7];//GM6020电机状态数组
 extern RC_ctrl_t *local_rc_ctrl;
 
 
 
-void Gimbal_Yaw_Small_Init(void)
+void Gimbal_YawSmall_Init(void)
 {
-	PID_PositionStructureInit (&SmallYaw_PositionPID,2424);        //外环位置环
-  PID_PositionSetParameter  (&SmallYaw_PositionPID,1.5,0,0);
+	PID_PositionStructureInit (&SmallYaw_GyroscopePID,0);        //外环小yaw角度环
+  PID_PositionSetParameter  (&SmallYaw_GyroscopePID,-1,0,0);
+  PID_PositionSetOUTRange   (&SmallYaw_GyroscopePID,-20000,20000);
+	
+	PID_PositionStructureInit (&SmallYaw_PositionPID,2414);        //外环电机角度环
+  PID_PositionSetParameter  (&SmallYaw_PositionPID,1,0,0);
   PID_PositionSetOUTRange   (&SmallYaw_PositionPID,-400,400);
   // PID_PositionSetNeedValueRange(&SmallYaw_PositionPID,4848,0);
 
@@ -23,49 +33,22 @@ void Gimbal_Yaw_Small_Init(void)
   PID_PositionSetEkRange    (&SmallYaw_SpeedPID, -3.0f, 3.0f);
 }
 
-void Gimbal_Yaw_Small_Control(void)
+void Gimbal_YawSmall_Control(void)
 {
-  
-    // ============速度环pid调节代码============
-  //  static uint32_t tick = 0;
-  //   static int i = 0;
-  //   float target_speed = 0.0f;
-
-  //   // 每 1000ms 切换一次状态（1秒）
-  //   if (HAL_GetTick() - tick > 1000) {
-  //       tick = HAL_GetTick();
-  //       i++;
-  //   }
-
-  //   // i=0: 0 RPM, i=1: +100, i=2: 0, i=3: -100, 然后循环
-  //   switch (i % 4) {
-  //       case 0: target_speed = 0.0f;    break;   // 停
-  //       case 1: target_speed = 100.0f;  break;   // 正转
-  //       case 2: target_speed = 0.0f;    break;   // 停
-  //       case 3: target_speed = 150.0f; break;   // 反转
-  //   }
-    
-    
-  //   PID_PositionSetNeedValue(&SmallYaw_SpeedPID, target_speed);
-  //   PID_PositionCalc(&SmallYaw_SpeedPID, motor_gimbal[5].speed_rpm);
-    
-  //   CAN_cmd_gimbal(0, (int16_t)SmallYaw_SpeedPID.OUT, 0, 0);
-	
-
-    // ============ 更新位置目标（仅打杆时）============
-    SmallYaw_PositionPID.Need_Value -= 0.025f * local_rc_ctrl->rc.ch[2];
-    // 限幅 [0, 4848]
-    if (SmallYaw_PositionPID.Need_Value > 4848.0f)
-        SmallYaw_PositionPID.Need_Value = 4848.0f;
-    else if (SmallYaw_PositionPID.Need_Value < 0.0f)
-        SmallYaw_PositionPID.Need_Value = 0.0f;
+    // ============通过大yaw角度计算小yaw角度============
+		SmallYaw_GyroscopePID.Need_Value  -= 0.0007 * local_rc_ctrl->rc.ch[2]; //-= 0.001 * local_rc_ctrl->rc.ch[2];
+		if(SmallYaw_GyroscopePID.Need_Value > 180) SmallYaw_GyroscopePID.Need_Value -=360 ;
+		if(SmallYaw_GyroscopePID.Need_Value < -180) SmallYaw_GyroscopePID.Need_Value +=360 ;
+		PID_PositionCalc(&SmallYaw_GyroscopePID, SmallYaw_BMI088_Data.Yaw);
     // ============ 位置环计算 =========================
-		if(Can2_Rx_Data[5].last_ecd - Can2_Rx_Data[5].ecd > 4096) 
-    PID_PositionCalc				(&SmallYaw_PositionPID, Can2_Rx_Data[5].ecd);
+//		SmallYaw_PositionPID.Need_Value  -= 0.001 * local_rc_ctrl->rc.ch[2]; //-= 0.001 * local_rc_ctrl->rc.ch[2];
+		SmallYaw_PositionPID.Need_Value -= 0.5*SmallYaw_GyroscopePID.OUT;
+		if(SmallYaw_PositionPID.Need_Value > 4848) SmallYaw_PositionPID.Need_Value = 4848;
+		else if(SmallYaw_PositionPID.Need_Value < 0) SmallYaw_PositionPID.Need_Value = 0 ;
+    PID_PositionCalc_Encoder(&SmallYaw_PositionPID, Can2_M6020_MotorStatus[1].Angle);
     // ============ 速度环计算 =========================
-    PID_PositionSetNeedValue(&SmallYaw_SpeedPID, SmallYaw_PositionPID.OUT);
-    PID_PositionCalc				(&SmallYaw_SpeedPID, Can2_Rx_Data[5].speed_rpm);
+    PID_PositionSetNeedValue(&SmallYaw_SpeedPID, SmallYaw_PositionPID.OUT);//SmallYaw_PositionPID.OUT
+    PID_PositionCalc				(&SmallYaw_SpeedPID, Can2_M6020_MotorStatus[1].Speed);
     // ============ 发送输出 ===========================
-    Motor_6020_Voltage1			(0, (int16_t)SmallYaw_SpeedPID.OUT, 0, 0, &hcan2);
+//    Motor_6020_Voltage1			(0, (int16_t)SmallYaw_SpeedPID.OUT, 0, 0, &hcan2);
 }
-

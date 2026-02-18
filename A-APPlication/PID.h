@@ -1,6 +1,8 @@
 #ifndef __PID_H__
 #define __PID_H__
 
+#include <math.h>
+
 typedef struct
 {
 	float Need_Value;//预期值
@@ -59,7 +61,7 @@ void PID_PositionSetNeedValue		(PID_PositionInitTypedef* PID_InitStructure,float
 void PID_PositionClean					(PID_PositionInitTypedef* PID_InitStructure);										//位置式PID清理
 void PID_PositionCalc						(PID_PositionInitTypedef* PID_InitStructure,float NowValue);						//位置式PID计算
 
-void PID_PositionCalcTEST(PID_PositionInitTypedef* PID_InitStructure,float NowValue);
+void PID_PositionCalc_Encoder(PID_PositionInitTypedef* PID_InitStructure,float NowValue);
 
 void PID_IncrementalStructureInit	(PID_IncrementalInitTypedef* PID_InitStructure,float NeedValue);		//增量式PID初始化结构体
 void PID_IncrementalSetParameter	(PID_IncrementalInitTypedef* PID_InitStructure,float kp,float ki,float kd);	//增量式PID设置参数

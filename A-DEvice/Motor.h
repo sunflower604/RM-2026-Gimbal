@@ -58,13 +58,15 @@ typedef struct//3508
 }M3508_Motor;//M3508电机状态结构体(减速比3591:187(≈19:1),转矩系数0.3N·m/A)
 typedef struct//6020
 {
-	uint16_t Angle;//GM6020电机机械角度
-	uint8_t First_Flag;//GM6020电机首次接收标志位
-	int64_t r;//GM6020电机转过圈数(默认圈数只会出现0,1)
-	int64_t Position;//GM6020电机角度位置原始数据
-	int16_t Speed;//GM6020电机转速
-	int16_t Current;//GM6020电机实际转矩电流
+	int16_t Current;		//GM6020电机实际转矩电流
 	uint8_t Temperature;//GM6020电机电机温度
+	uint16_t Angle;			//GM6020电机机械角度
+	int16_t Speed;			//GM6020电机转速
+
+	float ANgle;
+	uint8_t First_Flag;	//GM6020电机首次接收标志位
+	int64_t r;					//GM6020电机转过圈数(默认圈数只会出现0,1)
+	int64_t Position;		//GM6020电机角度位置原始数据
 }M6020_Motor;//GM6020电机状态结构体
 
 typedef struct//2006
@@ -87,6 +89,7 @@ typedef struct//2006
 	
 	float Power;//M2006电机功率(单位W)
 }M2006_Motor;//M2006电机状态结构体(减速比36:1,转矩系数0.18N·m/A)
+
 
 
 void Motor_3508_Current1(	int16_t device1, int16_t device2, 
@@ -116,5 +119,7 @@ void Motor_2006_Current2(	int16_t device1, int16_t device2,
 void CAN1_M2006_DataProcess(M2006_ID ID,uint8_t *Data);
 void CAN2_M2006_DataProcess(M2006_ID ID,uint8_t *Data);
 
+
+float Motor_Encoder_Circle(float target_angle, float current_encoder_angle);
 
 #endif //MOTOR_H
