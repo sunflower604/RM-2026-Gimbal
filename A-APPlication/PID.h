@@ -28,6 +28,7 @@ typedef struct
 	float P_OUT;//比例输出
 	float I_OUT;//积分输出
 	float D_OUT;//微分输出
+	
 }PID_PositionInitTypedef;//位置式PID参数结构体
 
 typedef struct
@@ -62,6 +63,7 @@ void PID_PositionClean					(PID_PositionInitTypedef* PID_InitStructure);								
 void PID_PositionCalc						(PID_PositionInitTypedef* PID_InitStructure,float NowValue);						//位置式PID计算
 
 void PID_PositionCalc_Encoder(PID_PositionInitTypedef* PID_InitStructure,float NowValue);
+void PID_PositionCalc_IMU(PID_PositionInitTypedef* PID_InitStructure,float NowValue);
 
 void PID_IncrementalStructureInit	(PID_IncrementalInitTypedef* PID_InitStructure,float NeedValue);		//增量式PID初始化结构体
 void PID_IncrementalSetParameter	(PID_IncrementalInitTypedef* PID_InitStructure,float kp,float ki,float kd);	//增量式PID设置参数

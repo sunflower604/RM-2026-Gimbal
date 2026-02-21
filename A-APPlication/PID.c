@@ -1,5 +1,6 @@
 #include "PID.h"
 #define Motor_ECD_MAX 8192.0f
+#define IMU_Circle_MAX 360.0f
 
 /*
  *函数简介:位置式PID初始化结构体
@@ -180,6 +181,46 @@ void PID_PositionCalc_Encoder(PID_PositionInitTypedef* PID_InitStructure,float N
 		PID_InitStructure->OUT = PID_InitStructure->OUT_Max;
 }
 
+
+void PID_PositionCalc_IMU(PID_PositionInitTypedef* PID_InitStructure,float NowValue)
+{	
+	//===============更新基本数据===============//
+	PID_InitStructure->Now_Value = NowValue;
+	PID_InitStructure->Ek_Last = PID_InitStructure->Ek;
+  float err = PID_InitStructure->Need_Value - PID_InitStructure->Now_Value;
+  if (err > IMU_Circle_MAX/2) {          // 8192 / 2 = 4096
+      err -= IMU_Circle_MAX;
+  } else if (err < -IMU_Circle_MAX/2) {
+      err += IMU_Circle_MAX;
+  }
+	PID_InitStructure->Ek = err;
+	PID_InitStructure->Ek_Del = PID_InitStructure->Ek - PID_InitStructure->Ek_Last;//误差差分
+
+	//===============误差死区===============//
+	if(PID_InitStructure->Ek_Min < PID_InitStructure->Ek && PID_InitStructure->Ek < PID_InitStructure->Ek_Max)//误差为0检测
+	{
+		PID_InitStructure->Ek = 0;
+	}	
+	PID_InitStructure->Ek_Sum += PID_InitStructure->Ek;
+	//===============误差积分限幅===============//
+	if(PID_InitStructure->Ek_Sum > PID_InitStructure->Ek_Sum_Max)
+		PID_InitStructure->Ek_Sum = PID_InitStructure->Ek_Sum_Max;
+	if(PID_InitStructure->Ek_Sum < PID_InitStructure->Ek_Sum_Min)
+		PID_InitStructure->Ek_Sum = PID_InitStructure->Ek_Sum_Min;
+	//===============计算pid各项输出及总输出===============//
+	PID_InitStructure->P_OUT = PID_InitStructure->Kp * PID_InitStructure->Ek;
+	PID_InitStructure->I_OUT = PID_InitStructure->Ki * PID_InitStructure->Ek_Sum;
+	PID_InitStructure->D_OUT = PID_InitStructure->Kd * PID_InitStructure->Ek_Del;
+	PID_InitStructure->OUT	 = PID_InitStructure->P_OUT + PID_InitStructure->I_OUT + PID_InitStructure->D_OUT;
+	
+	//===============输出限幅===============//
+	if(PID_InitStructure->OUT < PID_InitStructure->OUT_Min)//输出限幅
+		PID_InitStructure->OUT = PID_InitStructure->OUT_Min;
+	if(PID_InitStructure->OUT > PID_InitStructure->OUT_Max)
+		PID_InitStructure->OUT = PID_InitStructure->OUT_Max;
+}
+
+
 /*
  *函数简介:增量式PID初始化结构体
  *参数说明:增量式PID参数结构体
@@ -197,8 +238,8 @@ void PID_IncrementalStructureInit(PID_IncrementalInitTypedef* PID_InitStructure,
 	PID_InitStructure->Kp=0;
 	PID_InitStructure->Ki=0;
 	PID_InitStructure->Kd=0;
-	PID_InitStructure->OUT_Min=-1e10;
-	PID_InitStructure->OUT_Max=1e10;
+	PID_InitStructure->OUT_Min=-65535;
+	PID_InitStructure->OUT_Max=65535;
 }
 
 /*
@@ -256,8 +297,8 @@ void PID_IncrementalSetOUTRange(PID_IncrementalInitTypedef* PID_InitStructure,fl
 void PID_IncrementalCalc(PID_IncrementalInitTypedef* PID_InitStructure,float NowValue)
 {
 	PID_InitStructure->Now_Value	=NowValue;
-	PID_InitStructure->Ek_Last2				=PID_InitStructure->Ek_Last;
-	PID_InitStructure->Ek_Last				=PID_InitStructure->Ek;
+	PID_InitStructure->Ek_Last2		=PID_InitStructure->Ek_Last;
+	PID_InitStructure->Ek_Last		=PID_InitStructure->Ek;
 	PID_InitStructure->Ek					=PID_InitStructure->Need_Value-PID_InitStructure->Now_Value;
 	
 	if(PID_InitStructure->Ek_Min < PID_InitStructure->Ek && PID_InitStructure->Ek < PID_InitStructure->Ek_Max)//误差为0检测

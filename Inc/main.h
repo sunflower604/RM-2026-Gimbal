@@ -60,9 +60,15 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define IST8310_RST_Pin GPIO_PIN_6
 #define IST8310_RST_GPIO_Port GPIOG
+#define RGB_R_Pin GPIO_PIN_12
+#define RGB_R_GPIO_Port GPIOH
 #define IST8310_DRDY_Pin GPIO_PIN_3
 #define IST8310_DRDY_GPIO_Port GPIOG
 #define IST8310_DRDY_EXTI_IRQn EXTI3_IRQn
+#define RGB_G_Pin GPIO_PIN_11
+#define RGB_G_GPIO_Port GPIOH
+#define RGB_B_Pin GPIO_PIN_10
+#define RGB_B_GPIO_Port GPIOH
 #define CS1_ACCEL_Pin GPIO_PIN_4
 #define CS1_ACCEL_GPIO_Port GPIOA
 #define INT1_ACCEL_Pin GPIO_PIN_4

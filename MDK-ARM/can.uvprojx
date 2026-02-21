@@ -2121,6 +2121,16 @@
               <FileType>5</FileType>
               <FilePath>..\A-APPlication\Gimbal_PoseCalc.h</FilePath>
             </File>
+            <File>
+              <FileName>Gimbal_Warning.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\A-APPlication\Gimbal_Warning.c</FilePath>
+            </File>
+            <File>
+              <FileName>Gimbal_Warning.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\A-APPlication\Gimbal_Warning.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2207,6 +2217,26 @@
               <FileType>5</FileType>
               <FilePath>..\A-DEvice\BMI088.h</FilePath>
             </File>
+            <File>
+              <FileName>LED.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\A-DEvice\LED.c</FilePath>
+            </File>
+            <File>
+              <FileName>LED.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\A-DEvice\LED.h</FilePath>
+            </File>
+            <File>
+              <FileName>Buzzer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\A-DEvice\Buzzer.c</FilePath>
+            </File>
+            <File>
+              <FileName>Buzzer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\A-DEvice\Buzzer.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2261,6 +2291,11 @@
               <FileName>Parameter.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\A-Driver\Parameter.h</FilePath>
+            </File>
+            <File>
+              <FileName>task.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\A-Driver\task.h</FilePath>
             </File>
           </Files>
         </Group>

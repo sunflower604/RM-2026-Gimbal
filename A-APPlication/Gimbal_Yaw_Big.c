@@ -17,7 +17,7 @@ extern CAN_HandleTypeDef hcan2;
 void Gimbal_YawBig_Init(void)
 {
 	PID_PositionStructureInit (&BigYaw_PositionPID,3944);        //外环电机位置环
-  PID_PositionSetParameter  (&BigYaw_PositionPID,0.5,0,0);
+  PID_PositionSetParameter  (&BigYaw_PositionPID,0.5,0,8);
 	PID_PositionSetEkRange		(&BigYaw_PositionPID,-50,50);		//位置式PID设置误差为0阈值
   PID_PositionSetOUTRange   (&BigYaw_PositionPID,-20000,20000);
   // PID_PositionSetNeedValueRange(&BigYaw_PositionPID,4848,0);
@@ -30,36 +30,6 @@ void Gimbal_YawBig_Init(void)
 
 void Gimbal_YawBig_Control(void)
 {
-    // ============速度环pid调节代码============
-//  static uint32_t tick = 0;
-//   static int i = 0;
-//   float target_speed = 0.0f;
-
-//   // 每 1000ms 切换一次状态（1秒）
-//   if (HAL_GetTick() - tick > 1000) {
-//       tick = HAL_GetTick();
-//       i++;
-//   }
-
-//   // i=0: 0 RPM, i=1: +100, i=2: 0, i=3: -100, 然后循环
-//   switch (i % 4) {
-//       case 0: target_speed = 0.0f;    break;   // 停
-//       case 1: target_speed = 60.0f;  break;   // 正转
-//       case 2: target_speed = 0.0f;    break;   // 停
-//       case 3: target_speed = 60.0f; break;   // 反转
-//   }
-//  
-//  
-//   PID_PositionSetNeedValue(&BigYaw_SpeedPID, target_speed);
-//   PID_PositionCalc(&BigYaw_SpeedPID, Can2_M6020_MotorStatus[0].Speed);
-//  
-////    Motor_6020_Voltage1((int16_t)BigYaw_SpeedPID.OUT, 0, 0, 0, &hcan2);
-    // ========================
-
-	
-	
-	
-	
 //	
 //		(Can2_M6020_MotorStatus[0].ANgle - 104) = BigYaw_BMI088_Data.Yaw
 		

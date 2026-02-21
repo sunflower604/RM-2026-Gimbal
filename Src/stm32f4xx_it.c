@@ -338,9 +338,9 @@ void USART3_IRQHandler(void)
 void TIM6_DAC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
-//	Gimbal_Trigger_Control();
+	Gimbal_Trigger_Control();
 	Gimbal_YawSmall_Control();
-//	Gimbal_YawBig_Control();
+	Gimbal_YawBig_Control();
 	Gimbal_Shoot_Control();
 	Gimbal_Pitch_Control();
 	Gimbal_CtoC_Remote();

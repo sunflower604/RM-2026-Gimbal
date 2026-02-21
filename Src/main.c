@@ -32,42 +32,48 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include <stdint.h> 
+#include "task.h"
 #include "bsp_can.h"
 #include "bsp_usart.h"
+#include "ist8310driver.h"
+#include "BMI088.h"
+#include "BMI088driver.h"
 #include "Motor.h"
 #include "Remote.h"
 #include "PID.h"
+#include "LED.h"
+#include "Buzzer.h"
 #include "Gimbal_Yaw_Small.h"
 #include "Gimbal_Trigger.h"
 #include "Gimbal_Shoot.h"
 #include "Gimbal_Pitch.h"
 #include "Gimbal_PoseCalc.h"
-#include "ist8310driver.h"
-#include "BMI088.h"
-#include "BMI088driver.h"
 
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+//===============文件内部类型和宏
 
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+//===============文件内部的宏定义
 
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+//===============文件内部宏定义的标记
 
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+//===============私有变量
 
 extern uint8_t rx_data[8];//can_receive.c
 extern PID_PositionInitTypedef Trigger_SpeedPID;
@@ -90,6 +96,8 @@ uint8_t rx_byte;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+//===============私有函数原型
+void RM_debug(void);
 
 /* USER CODE END PFP */
 
@@ -145,11 +153,15 @@ int main(void)
   MX_I2C3_Init();
   MX_SPI1_Init();
   MX_TIM10_Init();
+  MX_TIM5_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 	HAL_TIM_Base_Start_IT(&htim6);
   Can_Filter_Init();
 	
   Remote_Init();
+	LED_Init();
+	Buzzer_Init();
   Gimbal_YawSmall_Init();
   Gimbal_YawBig_Init();
 	Gimbal_Trigger_Init();
@@ -160,6 +172,7 @@ int main(void)
   ist8310_init();
 	
 	UART2_SendString("RM GOOOO!");
+//	Buzzer_On();
 	
 	//=================
 	
@@ -169,9 +182,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		
+//		RM_debug();
+		Gimbal_Warning_Remote();
+//    Gimbal_Warning_Music();
+
 		Gimbal_PoseCalc();
-// ============磁力计和陀螺仪数据============
+		// ============磁力计和陀螺仪数据============
 //		UART2_SendByte(',');
 		UART2_SendFloat_Sign(Can_BMI088_Data.Yaw,4);
 		UART2_SendByte(',');
@@ -207,14 +223,10 @@ int main(void)
 //		UART2_SendByte(',');
 //		UART2_SendNumber(BigYaw_PositionPID.Now_Value,4);
 //		UART2_SendByte(',');
-//		UART2_SendNumber(SmallYaw_SpeedPID.Need_Value,4);//小waw
-//		UART2_SendByte(',');
-//		UART2_SendNumber(SmallYaw_SpeedPID.Now_Value,4);
-//		UART2_SendByte(',');
-//		UART2_SendNumber(SmallYaw_PositionPID.Need_Value,4);
-//		UART2_SendByte(',');
-//		UART2_SendNumber(SmallYaw_PositionPID.Now_Value,4);
-//		UART2_SendByte(',');
+		UART2_SendFloat_Sign(SmallYaw_SpeedPID.Need_Value,4);//小waw
+		UART2_SendByte(',');
+		UART2_SendFloat_Sign(SmallYaw_SpeedPID.Now_Value,4);
+		UART2_SendByte(',');
 		UART2_SendFloat_Sign(SmallYaw_GyroscopePID.Need_Value,4);
 		UART2_SendByte(',');
 		UART2_SendFloat_Sign(SmallYaw_GyroscopePID.Now_Value,4);
@@ -377,6 +389,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     HAL_UART_Receive_DMA(&huart1, &rx_byte, 1);
   }
 }
+
+void RM_debug(void)
+{
+  PROCESSOR(1000);
+  LED_R_Toggle();
+}
+
 /* USER CODE END 4 */
 
 /**

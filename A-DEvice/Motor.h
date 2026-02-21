@@ -2,7 +2,6 @@
 #define MOTOR_H
 #include <stdint.h>
 #include "can.h"
-//测试························
 typedef enum//3508
 {
 	M3508_1=0x201,//ID1

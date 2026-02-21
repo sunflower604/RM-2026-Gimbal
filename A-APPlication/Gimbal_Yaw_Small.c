@@ -16,39 +16,32 @@ extern RC_ctrl_t *local_rc_ctrl;
 
 
 
+
 void Gimbal_YawSmall_Init(void)
 {
 	PID_PositionStructureInit (&SmallYaw_GyroscopePID,0);        //外环小yaw角度环
-  PID_PositionSetParameter  (&SmallYaw_GyroscopePID,-1,0,0);
+  PID_PositionSetParameter  (&SmallYaw_GyroscopePID,40,0,0);
   PID_PositionSetOUTRange   (&SmallYaw_GyroscopePID,-20000,20000);
-	
-	PID_PositionStructureInit (&SmallYaw_PositionPID,2414);        //外环电机角度环
-  PID_PositionSetParameter  (&SmallYaw_PositionPID,1,0,0);
-  PID_PositionSetOUTRange   (&SmallYaw_PositionPID,-400,400);
-  // PID_PositionSetNeedValueRange(&SmallYaw_PositionPID,4848,0);
 
 	PID_PositionStructureInit (&SmallYaw_SpeedPID,0);              //内环速度环
-  PID_PositionSetParameter  (&SmallYaw_SpeedPID,100,0,0);
+  PID_PositionSetParameter  (&SmallYaw_SpeedPID,60,0,0);
   PID_PositionSetOUTRange   (&SmallYaw_SpeedPID,-20000,20000);
   PID_PositionSetEkRange    (&SmallYaw_SpeedPID, -3.0f, 3.0f);
 }
 
 void Gimbal_YawSmall_Control(void)
 {
-    // ============通过大yaw角度计算小yaw角度============
-		SmallYaw_GyroscopePID.Need_Value  -= 0.0007 * local_rc_ctrl->rc.ch[2]; //-= 0.001 * local_rc_ctrl->rc.ch[2];
-		if(SmallYaw_GyroscopePID.Need_Value > 180) SmallYaw_GyroscopePID.Need_Value -=360 ;
-		if(SmallYaw_GyroscopePID.Need_Value < -180) SmallYaw_GyroscopePID.Need_Value +=360 ;
-		PID_PositionCalc(&SmallYaw_GyroscopePID, SmallYaw_BMI088_Data.Yaw);
-    // ============ 位置环计算 =========================
-//		SmallYaw_PositionPID.Need_Value  -= 0.001 * local_rc_ctrl->rc.ch[2]; //-= 0.001 * local_rc_ctrl->rc.ch[2];
-		SmallYaw_PositionPID.Need_Value -= 0.5*SmallYaw_GyroscopePID.OUT;
-		if(SmallYaw_PositionPID.Need_Value > 4848) SmallYaw_PositionPID.Need_Value = 4848;
-		else if(SmallYaw_PositionPID.Need_Value < 0) SmallYaw_PositionPID.Need_Value = 0 ;
-    PID_PositionCalc_Encoder(&SmallYaw_PositionPID, Can2_M6020_MotorStatus[1].Angle);
-    // ============ 速度环计算 =========================
-    PID_PositionSetNeedValue(&SmallYaw_SpeedPID, SmallYaw_PositionPID.OUT);//SmallYaw_PositionPID.OUT
-    PID_PositionCalc				(&SmallYaw_SpeedPID, Can2_M6020_MotorStatus[1].Speed);
-    // ============ 发送输出 ===========================
+	// ============获取目标角度============
+	SmallYaw_GyroscopePID.Need_Value  -= 0.0007 * local_rc_ctrl->rc.ch[2]; //-= 0.0007 * local_rc_ctrl->rc.ch[2];// = 0;
+	if(SmallYaw_GyroscopePID.Need_Value > 180) SmallYaw_GyroscopePID.Need_Value -=360 ;
+	else if(SmallYaw_GyroscopePID.Need_Value < -180) SmallYaw_GyroscopePID.Need_Value +=360 ;
+	// ============角度环计算============
+	PID_PositionCalc_IMU(&SmallYaw_GyroscopePID, SmallYaw_BMI088_Data.Yaw);
+	// ============ 速度环计算 =========================
+	PID_PositionSetNeedValue(&SmallYaw_SpeedPID, SmallYaw_GyroscopePID.OUT);//SmallYaw_GyroscopePID.OUT
+	PID_PositionCalc				(&SmallYaw_SpeedPID, Can2_M6020_MotorStatus[1].Speed);
+	if(Can2_M6020_MotorStatus[1].ANgle>-74 && Can2_M6020_MotorStatus[1].ANgle<8) SmallYaw_SpeedPID.OUT=1111;//两个愚蠢的办法解决超限位问题
+	if(Can2_M6020_MotorStatus[1].ANgle>-154 && Can2_M6020_MotorStatus[1].ANgle<-74) SmallYaw_SpeedPID.OUT=-1111;
+	// ============ 发送输出 ===========================
 //    Motor_6020_Voltage1			(0, (int16_t)SmallYaw_SpeedPID.OUT, 0, 0, &hcan2);
 }
