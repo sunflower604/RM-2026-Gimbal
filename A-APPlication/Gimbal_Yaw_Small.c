@@ -29,6 +29,13 @@ void Gimbal_YawSmall_Init(void)
   PID_PositionSetParameter  (&SmallYaw_SpeedPID,100,0,0);
   PID_PositionSetOUTRange   (&SmallYaw_SpeedPID,-20000,20000);
   PID_PositionSetEkRange    (&SmallYaw_SpeedPID, -3.0f, 3.0f);
+	
+	//====新加的
+	// 开机防摔：初始化完成后，立即将目标设为当前实际角度
+	// 这样PID初始误差为0，不会产生瞬间大输出
+	gyro_needvalue = SmallYaw_BMI088_Data.Yaw;
+	SmallYaw_GyroscopePID.Need_Value = SmallYaw_BMI088_Data.Yaw;
+	//====
 }
 
 void Gimbal_YawSmall_Control(void)

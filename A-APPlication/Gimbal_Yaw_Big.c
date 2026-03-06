@@ -26,6 +26,13 @@ void Gimbal_YawBig_Init(void)
   PID_PositionSetParameter  (&BigYaw_SpeedPID,45,0,0);
 	PID_PositionSetEkRange		(&BigYaw_PositionPID,-2,2);
   PID_PositionSetOUTRange   (&BigYaw_SpeedPID,-15000,15000);
+	
+	//====新加的
+	// 开机防摔：等待CAN数据更新后，将目标设为当前实际编码器位置
+	// 注意：需要延时一小段时间确保CAN数据已接收
+	HAL_Delay(100);  // 等待100ms确保电机数据已更新
+	PID_PositionSetNeedValue(&BigYaw_PositionPID, Can2_M6020_MotorStatus[0].Angle);
+	//====
 }
 
 void Gimbal_YawBig_Control(void)
