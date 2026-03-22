@@ -112,15 +112,16 @@ void Remote_UART_IDLE_Callback(void)
         }
     }
 }
+
 void CToC_MasterSendData(	int16_t data1, int16_t data2, 
-															int16_t data3, int16_t data4, 
-															CAN_HandleTypeDef *hcan)
+													int16_t data3, int16_t data4, 
+													CAN_HandleTypeDef *hcan , uint32_t ID)
 {
 	CAN_TxHeaderTypeDef  Tx_Message;
 	uint8_t	Can_Send_Data[8];
   uint32_t send_mail_box;
 	
-	Tx_Message.StdId = 0x149;
+	Tx_Message.StdId = ID;
 	Tx_Message.RTR = CAN_RTR_DATA;//数据帧
 	Tx_Message.IDE = CAN_ID_STD;//标准格式
 	Tx_Message.DLC = 0x08;//8字节数据段

@@ -7,6 +7,7 @@
 #include "BSP_CAN.h"
 #include "BMI088.h"
 #include "Gimbal_PoseCalc.h"
+#include <stdint.h> 
 
 static void adjustAngle3(float angle1, float angle2, float *angle3);
 

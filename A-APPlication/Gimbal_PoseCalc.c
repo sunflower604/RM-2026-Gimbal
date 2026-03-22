@@ -17,18 +17,19 @@ BMI088_Init_typedef SmallYaw_BMI088_Data;	//小yaw轴解算的陀螺仪数据
 
 void Gimbal_PoseCalc(void)
 {
-  //获取陀螺仪数据
-  BMI088_GetData(&Can_BMI088_Data);
-  
-  //计算姿态
-	Can_BMI088_Data.Yaw = -Can_BMI088_Data.Yaw;
+		//获取陀螺仪数据
+		BMI088_GetData(&Can_BMI088_Data);
+		
+		//计算姿态
+		Can_BMI088_Data.Yaw = -Can_BMI088_Data.Yaw;
+		
+		BigYaw_BMI088_Data.Yaw = -(Can_BMI088_Data.Yaw + (Can2_M6020_MotorStatus[0].ANgle + 186));
+		if(BigYaw_BMI088_Data.Yaw > 180)				BigYaw_BMI088_Data.Yaw -=360;
+		else if(BigYaw_BMI088_Data.Yaw < -180)	BigYaw_BMI088_Data.Yaw +=360;
+		
+		SmallYaw_BMI088_Data.Yaw = BigYaw_BMI088_Data.Yaw + (Can2_M6020_MotorStatus[1].ANgle - 106.5f);
+		if(SmallYaw_BMI088_Data.Yaw > 180)				SmallYaw_BMI088_Data.Yaw -=360;
+		else if(SmallYaw_BMI088_Data.Yaw < -180)	SmallYaw_BMI088_Data.Yaw +=360;
 	
-  BigYaw_BMI088_Data.Yaw = -(Can_BMI088_Data.Yaw + (Can2_M6020_MotorStatus[0].ANgle + 186));
-	if(BigYaw_BMI088_Data.Yaw > 180)				BigYaw_BMI088_Data.Yaw -=360;
-	else if(BigYaw_BMI088_Data.Yaw < -180)	BigYaw_BMI088_Data.Yaw +=360;
-  
-  SmallYaw_BMI088_Data.Yaw = BigYaw_BMI088_Data.Yaw + (Can2_M6020_MotorStatus[1].ANgle - 106.5f);
-	if(SmallYaw_BMI088_Data.Yaw > 180)				SmallYaw_BMI088_Data.Yaw -=360;
-	else if(SmallYaw_BMI088_Data.Yaw < -180)	SmallYaw_BMI088_Data.Yaw +=360;
 }
   

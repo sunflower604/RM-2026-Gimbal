@@ -97,6 +97,10 @@ extern BMI088_Init_typedef BigYaw_BMI088_Data;		//大yaw轴解算的陀螺仪数
 extern BMI088_Init_typedef SmallYaw_BMI088_Data;	//小yaw轴解算的陀螺仪数据
 
 
+uint8_t uart6_rx_buf[1];  // 注意：你代码里写的uart1_rx_buf可能是笔误，要和huart6对应
+uint8_t uart6_rx_flag = 0; // 接收完成标志（可选）
+
+
 extern float gyro_needvalue ;//用户目标角度
 
 uint8_t rx_byte;//串口中断回调函数缓冲区
@@ -164,6 +168,7 @@ int main(void)
   MX_TIM10_Init();
   MX_TIM5_Init();
   MX_TIM4_Init();
+  MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
 	HAL_TIM_Base_Start_IT(&htim6);
   Can_Filter_Init();
@@ -180,6 +185,8 @@ int main(void)
 	//=================
   ist8310_init();
 	
+	HAL_UART_Receive_IT(&huart6, uart6_rx_buf, 1);
+	
 	UART2_SendString("RM GOOOO!");
 //	Buzzer_On();
 	
@@ -191,6 +198,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		
+		
+		uint8_t send_data = 'A';
+		HAL_UART_Transmit(&huart6, &send_data, 1, 0xFFFF);
 //		RM_debug();
 		Gimbal_Warning_Remote();
 //    Gimbal_Warning_Music();
@@ -326,7 +337,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
     CAN_RxHeaderTypeDef rx_header;
     uint8_t rx_data[8];
-
+		static int temp = 0; 
+		
     // 读取接收到的消息
     if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rx_header, rx_data) != HAL_OK)
         return; // 安全检查
@@ -354,8 +366,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 							CAN1_M6020_DataProcess(0x206,rx_data);break;
 					case 0x207:
 							CAN1_M2006_DataProcess(0x207,rx_data);break;
-					case 0x208:
-							break;
 					default:
 					{
 							break;
@@ -401,7 +411,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
     HAL_UART_Receive_DMA(&huart1, &rx_byte, 1);
   }
+	
+//  else if (huart->Instance == USART6)
+//	{
+//      HAL_UART_Transmit(&huart6, uart6_rx_buf, 1, 100); 
+//      uart6_rx_flag = 1; // 标记有数据接收
+//      
+//      HAL_UART_Receive_IT(&huart6, uart6_rx_buf, 1);
+//  }
 }
+
 
 void RM_debug(void)
 {

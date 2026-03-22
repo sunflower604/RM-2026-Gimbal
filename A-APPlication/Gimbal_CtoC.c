@@ -7,7 +7,12 @@ extern BMI088_Init_typedef SmallYaw_BMI088_Data;
 void Gimbal_CtoC_Remote(void)
 {
 	CToC_MasterSendData(	local_rc_ctrl->rc.ch[0],local_rc_ctrl->rc.ch[1],
-												local_rc_ctrl->rc.ch[2],local_rc_ctrl->rc.ch[3],&hcan2);
+												local_rc_ctrl->rc.ch[2],local_rc_ctrl->rc.ch[3],
+												&hcan2, 0x149);
+	CToC_MasterSendData(	local_rc_ctrl->rc.ch[4]					,
+												(int16_t)local_rc_ctrl->rc.s[0]	,(int16_t)local_rc_ctrl->rc.s[1],
+												0,
+												&hcan2, 0x189);
 }
 
 void CToC_AngleProcess(uint32_t ID,uint8_t *Data,BMI088_Init_typedef *data)

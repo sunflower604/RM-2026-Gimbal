@@ -70,6 +70,6 @@ void Remote_UART_IDLE_Callback(void);
 
 void CToC_MasterSendData(	int16_t data1, int16_t data2, 
 													int16_t data3, int16_t data4, 
-													CAN_HandleTypeDef *hcan);
+													CAN_HandleTypeDef *hcan , uint32_t ID);
 
 #endif

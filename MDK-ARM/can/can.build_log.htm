@@ -22,15 +22,38 @@ Dialog DLL:      TCM.DLL V1.56.4.0
  
 <h2>Project:</h2>
 C:\Users\32762\Desktop\RM-2026-Gimbal\MDK-ARM\can.uvprojx
-Project File Date:  02/20/2026
+Project File Date:  03/23/2026
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'D:\keil5\ARM\ARMCOMPLIER506\Bin'
 Build target 'can'
-compiling stm32f4xx_it.c...
+compiling main.c...
+../Src/main.c(178): warning:  #223-D: function "Buzzer_Init" declared implicitly
+  	Buzzer_Init();
+../Src/main.c(180): warning:  #223-D: function "Gimbal_YawBig_Init" declared implicitly
+    Gimbal_YawBig_Init();
+../Src/main.c(206): warning:  #223-D: function "Gimbal_Warning_Remote" declared implicitly
+  		Gimbal_Warning_Remote();
+../Src/main.c(356): warning:  #188-D: enumerated type mixed with another type
+  							CAN1_M3508_DataProcess(0x201,rx_data);break;
+../Src/main.c(358): warning:  #188-D: enumerated type mixed with another type
+  							CAN1_M3508_DataProcess(0x202,rx_data);break;
+../Src/main.c(366): warning:  #188-D: enumerated type mixed with another type
+  							CAN1_M6020_DataProcess(0x206,rx_data);break;
+../Src/main.c(368): warning:  #188-D: enumerated type mixed with another type
+  							CAN1_M2006_DataProcess(0x207,rx_data);break;
+../Src/main.c(388): warning:  #188-D: enumerated type mixed with another type
+  							CAN2_M6020_DataProcess(0x205,rx_data);break;
+../Src/main.c(390): warning:  #188-D: enumerated type mixed with another type
+  							CAN2_M6020_DataProcess(0x206,rx_data);break;
+../Src/main.c(396): warning:  #223-D: function "CToC_AngleProcess" declared implicitly
+  							CToC_AngleProcess(0x146,rx_data,&Can_BMI088_Data);break;
+../Src/main.c(340): warning:  #177-D: variable "temp"  was declared but never referenced
+  		static int temp = 0; 
+../Src/main.c: 11 warnings, 0 errors
 linking...
-Program Size: Code=40130 RO-data=806 RW-data=708 ZI-data=6732  
-"can\can.axf" - 0 Error(s), 0 Warning(s).
+Program Size: Code=36958 RO-data=1066 RW-data=716 ZI-data=6836  
+"can\can.axf" - 0 Error(s), 11 Warning(s).
 
 <h2>Software Packages used:</h2>
 
