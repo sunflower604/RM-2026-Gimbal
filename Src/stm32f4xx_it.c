@@ -53,9 +53,10 @@
 
 #define NEW_FRAME_HEADER1    0xBB    // 自定义帧头1，可根据实际需求修改
 #define NEW_FRAME_HEADER2    0x77    // 自定义帧头2，可根据实际需求修改
-#define NEW_FRAME_TAIL       0xEE    // 自定义帧尾，可根据实际需求修改
+#define NEW_FRAME_TAIL1			 0xCC
+#define NEW_FRAME_TAIL2      0xEE    // 自定义帧尾，可根据实际需求修改
 #define NEW_FRAME_LENGTH     15      // 帧总长度15字节
-#define NEW_DATA_BODY_LENGTH 12      // 帧头后到CRC8前的长度（15-3=12）
+#define NEW_DATA_BODY_LENGTH 11      // 帧头后到CRC8前的长度（15-3=12）
 
 uint8_t NewRxBuffer[NEW_FRAME_LENGTH] = {0};
 
@@ -485,11 +486,7 @@ void USART6_IRQHandler(void)
 	
     if(__HAL_UART_GET_FLAG(&huart6, UART_FLAG_RXNE) != RESET)
     {
-        // 读取接收字节（使用正确的HAL方法，或直接操作寄存器）
-        // 方法1: 直接从DR寄存器读取 (推荐，因为这是在中断里)
         RxByte = (uint8_t)(huart6.Instance->DR & 0xFF);
-        // 方法2: 使用HAL库宏 (效果相同，但更明确)
-        // RxByte = (uint8_t)__HAL_UART_GET_DATA(&huart6);
 
         // 接收状态机处理
         switch(RxState)
@@ -532,48 +529,40 @@ void USART6_IRQHandler(void)
             // 状态3：校验CRC8（字节14）
             case 3:
                 NewRxBuffer[13] = RxByte; // 存储CRC8字节
-                // 校验CRC8（校验范围：字节1~13，共13字节）
-                if(RefereeSystem_VerifyCRC8CheckSum(NewRxBuffer, 13) == 1)
+                if (RxByte == NEW_FRAME_TAIL1)
                 {
-                    RxState = 4; // CRC8校验成功，切换到校验帧尾
+                    RxState = 4; // 校验成功，切换到校验帧尾2
                 }
                 else
                 {
-                    RxState = 0; // CRC8校验失败，重置状态机
+                    RxState = 0; // 帧尾1错误，重置状态机
                 }
                 break;
 
             // 状态4：校验帧尾（字节15）
             case 4:
                 NewRxBuffer[14] = RxByte; // 存储帧尾字节
-                if(RxByte == NEW_FRAME_TAIL)
+                if(RxByte == NEW_FRAME_TAIL2)
                 {
-                    // 帧尾正确，解析数据
-                    // 解析两字节数据（低字节在前，若实际是高字节在前则交换顺序）
                     NewRxData.data1 = (uint16_t)NewRxBuffer[3] << 8 | NewRxBuffer[2];
                     NewRxData.data2 = (uint16_t)NewRxBuffer[5] << 8 | NewRxBuffer[4];
                     NewRxData.data3 = (uint16_t)NewRxBuffer[7] << 8 | NewRxBuffer[6];
                     NewRxData.data4 = (uint16_t)NewRxBuffer[9] << 8 | NewRxBuffer[8];
                     NewRxData.data5 = (uint16_t)NewRxBuffer[11] << 8 | NewRxBuffer[10];
                     
-                    // 解析字节13：高4位=numA，低4位=numB
                     NewRxData.numA = (NewRxBuffer[12] >> 4) & 0x0F;
                     NewRxData.numB = NewRxBuffer[12] & 0x0F;
 
-                    // 可选：验证numA/numB是否为1/2/3
                     if((NewRxData.numA < 1 || NewRxData.numA > 3) || 
                        (NewRxData.numB < 1 || NewRxData.numB > 3))
                     {
-                        // 数值非法，清空数据（可选逻辑）
                         memset(&NewRxData, 0, sizeof(NewRxDataStruct));
                     }
                 }
-                // 无论帧尾是否正确，都重置状态机准备下一次接收
                 RxState = 0;
                 RxCount = 0;
                 break;
 
-            // 默认状态：重置
             default:
                 RxState = 0;
                 RxCount = 0;
@@ -581,7 +570,7 @@ void USART6_IRQHandler(void)
         }
 	}
   /* USER CODE END USART6_IRQn 0 */
-  HAL_UART_IRQHandler(&huart6);
+//  HAL_UART_IRQHandler(&huart6);
   /* USER CODE BEGIN USART6_IRQn 1 */
 
   /* USER CODE END USART6_IRQn 1 */
