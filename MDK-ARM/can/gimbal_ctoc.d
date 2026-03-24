@@ -44,3 +44,4 @@ can\gimbal_ctoc.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 can\gimbal_ctoc.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 can\gimbal_ctoc.o: ../Inc/can.h
 can\gimbal_ctoc.o: ../A-DEvice/BMI088.h
+can\gimbal_ctoc.o: ../Inc/stm32f4xx_it.h

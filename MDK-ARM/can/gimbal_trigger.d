@@ -47,3 +47,4 @@ can\gimbal_trigger.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\stdio.h
 can\gimbal_trigger.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\string.h
 can\gimbal_trigger.o: ../Inc/usart.h
 can\gimbal_trigger.o: ../A-Driver/BSP_CAN.h
+can\gimbal_trigger.o: ../Inc/stm32f4xx_it.h

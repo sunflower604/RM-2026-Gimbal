@@ -1,4 +1,5 @@
 #include "Gimbal_Shoot.h"
+#include "stm32f4xx_it.h"
 
 PID_PositionInitTypedef ShootLeft_SpeedPID;
 PID_PositionInitTypedef ShootRight_SpeedPID;
@@ -6,6 +7,9 @@ uint8_t Gimbal_Shoot_Flag;
 extern M3508_Motor Can1_M3508_MotorStatus[8];
 extern M3508_Motor Can2_M3508_MotorStatus[8];
 extern RC_ctrl_t *local_rc_ctrl;
+extern uint8_t Remote_Status;
+extern uint8_t MiniPC_Flag;
+extern NewRxDataStruct NewRxData;     // 解析后的数据
 
 void Gimbal_Shoot_Init()
 {
@@ -22,55 +26,72 @@ void Gimbal_Shoot_Init()
 
 void Gimbal_Shoot_Control()
 {
-////=====================test
-//	static uint32_t tick = 0;
-//	static int i = 0;
-//	float target_speed = 0.0f;
-//	
-//	// 每 1000ms 切换一次状态（1秒）
-//	if (HAL_GetTick() - tick > 1000) {
-//			tick = HAL_GetTick();
-//			i++;
-//	}
-//	
-//	// i=0: 0 RPM, i=1: +100, i=2: 0, i=3: -100, 然后循环
-//	switch (i % 4) {
-//			case 0: target_speed = 0.0f;    break;   // 停
-//			case 1: target_speed = 100.0f;  break;   // 正转
-//			case 2: target_speed = 0.0f;    break;   // 停
-//			case 3: target_speed = 150.0f; break;   // 反转
-//	}
-//	
-//	PID_PositionSetNeedValue(&ShootLeft_SpeedPID, target_speed);
-//	PID_PositionCalc				(&ShootLeft_SpeedPID, motor_chassis[0].speed_rpm);
-//	PID_PositionSetNeedValue(&ShootRight_SpeedPID, target_speed);
-//	PID_PositionCalc				(&ShootRight_SpeedPID, motor_chassis[1].speed_rpm);
-//=====================test
-	
-	float target_speed = 0.0f;
-	if(local_rc_ctrl->rc.s[0] == 0x02)
-	{
-		target_speed = -6000;
-		Gimbal_Shoot_Flag = 1;
+	if(Remote_Status==1 && local_rc_ctrl->rc.s[1]!=1){//遥控器手动控制
+		float target_speed = 0.0f;
+		if(local_rc_ctrl->rc.s[1] == 0x02)
+		{
+			target_speed = -6000;
+			Gimbal_Shoot_Flag = 1;
+		}
+		else
+		{
+			target_speed = 0;
+			Gimbal_Shoot_Flag = 0;
+			
+		}
+		PID_PositionSetNeedValue(&ShootLeft_SpeedPID, target_speed);
+		PID_PositionCalc				(&ShootLeft_SpeedPID, (float)Can1_M3508_MotorStatus[0].RotorSpeed);//ID1
+		PID_PositionSetNeedValue(&ShootRight_SpeedPID,-target_speed);
+		PID_PositionCalc				(&ShootRight_SpeedPID, (float)Can1_M3508_MotorStatus[1].RotorSpeed);//ID2
+		
+		Motor_3508_Current1(
+			(int16_t)ShootLeft_SpeedPID.OUT,
+			(int16_t)ShootRight_SpeedPID.OUT,
+			0,
+			0,
+			&hcan1
+		);
 	}
-	else
-	{
-		target_speed = 0;
-		Gimbal_Shoot_Flag = 0;
+	else if(Remote_Status==1 && MiniPC_Flag==1 && local_rc_ctrl->rc.s[1]==1){//小电脑控制
+		float target_speed = 0.0f;
+		if(NewRxData.numA == 0x02)
+		{
+			target_speed = -6000;
+			Gimbal_Shoot_Flag = 1;
+		}
+		else
+		{
+			target_speed = 0;
+			Gimbal_Shoot_Flag = 0;
+			
+		}
+		PID_PositionSetNeedValue(&ShootLeft_SpeedPID, target_speed);
+		PID_PositionCalc				(&ShootLeft_SpeedPID, (float)Can1_M3508_MotorStatus[0].RotorSpeed);//ID1
+		PID_PositionSetNeedValue(&ShootRight_SpeedPID,-target_speed);
+		PID_PositionCalc				(&ShootRight_SpeedPID, (float)Can1_M3508_MotorStatus[1].RotorSpeed);//ID2
+		
+		Motor_3508_Current1(
+			(int16_t)ShootLeft_SpeedPID.OUT,
+			(int16_t)ShootRight_SpeedPID.OUT,
+			0,
+			0,
+			&hcan1
+		);
 		
 	}
-	PID_PositionSetNeedValue(&ShootLeft_SpeedPID, target_speed);
-	PID_PositionCalc				(&ShootLeft_SpeedPID, (float)Can1_M3508_MotorStatus[0].RotorSpeed);//ID1
-	PID_PositionSetNeedValue(&ShootRight_SpeedPID,-target_speed);
-	PID_PositionCalc				(&ShootRight_SpeedPID, (float)Can1_M3508_MotorStatus[1].RotorSpeed);//ID2
-	
-	Motor_3508_Current1(
-		(int16_t)ShootLeft_SpeedPID.OUT,
-		(int16_t)ShootRight_SpeedPID.OUT,
-		0,
-		0,
-		&hcan1
-	);
+	else if(Remote_Status == 0){
+		PID_PositionClean(&ShootRight_SpeedPID);
+		PID_PositionClean(&ShootLeft_SpeedPID);
+		PID_PositionSetNeedValue(&ShootRight_SpeedPID, 0);
+		PID_PositionSetNeedValue(&ShootLeft_SpeedPID, 0);
+		Motor_3508_Current1(
+			0,
+			0,
+			0,
+			0,
+			&hcan1
+		);
+	}
 }
 
 

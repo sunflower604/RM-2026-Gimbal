@@ -47,3 +47,4 @@ can\gimbal_shoot.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\stdio.h
 can\gimbal_shoot.o: D:\keil5\ARM\ARMCOMPLIER506\Bin\..\include\string.h
 can\gimbal_shoot.o: ../Inc/usart.h
 can\gimbal_shoot.o: ../A-Driver/BSP_CAN.h
+can\gimbal_shoot.o: ../Inc/stm32f4xx_it.h

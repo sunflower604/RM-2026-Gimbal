@@ -4,16 +4,18 @@
 //===============变量区
 extern UART_HandleTypeDef huart3;
 extern DMA_HandleTypeDef hdma_usart3_rx;
-const RC_ctrl_t *local_rc_ctrl;	
-static uint8_t sbus_rx_buf[2][SBUS_RX_BUF_NUM];
-RC_ctrl_t rc_ctrl;
+
+const RC_ctrl_t *local_rc_ctrl;	    //遥控器数据指针
+RC_ctrl_t rc_ctrl;                  //遥控器数据
+uint8_t Remote_Status;              //遥控器连接状态,0（未连接），1（首次连接），2（正常连接）
+static uint8_t sbus_rx_buf[2][SBUS_RX_BUF_NUM];//双缓冲区
 
 //===============内部函数
 const RC_ctrl_t *remote_GetControlPoint(void)
 {
     return &rc_ctrl;
 }
-
+ 
 
 static void remote_SbusToRC(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl)
 {

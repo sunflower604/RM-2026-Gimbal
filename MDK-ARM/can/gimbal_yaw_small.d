@@ -49,3 +49,4 @@ can\gimbal_yaw_small.o: ../Inc/usart.h
 can\gimbal_yaw_small.o: ../A-Driver/BSP_CAN.h
 can\gimbal_yaw_small.o: ../A-DEvice/BMI088.h
 can\gimbal_yaw_small.o: ..\A-APPlication\Gimbal_PoseCalc.h
+can\gimbal_yaw_small.o: ../Inc/stm32f4xx_it.h

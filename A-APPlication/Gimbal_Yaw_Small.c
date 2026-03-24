@@ -1,11 +1,12 @@
 #include "Gimbal_Yaw_Small.h"
+#include "stm32f4xx_it.h"
 #define SMALLYAW_MID 2424          //小yaw轴中位值
 #define SMALLYAW_LEFT 1650          //小yaw轴左侧最大偏移
 #define SMALLYAW_RIGHT 1650          //小yaw轴右侧最大偏移（顺时针减小）
 
 PID_PositionInitTypedef SmallYaw_GyroscopePID;  //外环小yaw角度环
-PID_PositionInitTypedef SmallYaw_PositionPID;   //外环小yaw位置环
 PID_PositionInitTypedef SmallYaw_SpeedPID;      //内环小yaw速度环
+PID_PositionInitTypedef SmallYaw_PositionPID;   //外环小yaw位置环
 extern BMI088_Init_typedef BMI088_Data;             //底盘C板陀螺仪数据
 extern BMI088_Init_typedef Can_BMI088_Data;         //底盘C板陀螺仪数据
 extern BMI088_Init_typedef BigYaw_BMI088_Data;      //大yaw轴解算的陀螺仪数据
@@ -13,6 +14,9 @@ extern BMI088_Init_typedef SmallYaw_BMI088_Data;    //小yaw轴解算的陀螺�
 extern M6020_Motor Can1_M6020_MotorStatus[7];//GM6020电机状态数组
 extern M6020_Motor Can2_M6020_MotorStatus[7];//GM6020电机状态数组
 extern RC_ctrl_t *local_rc_ctrl;
+extern uint8_t Remote_Status; 
+extern uint8_t MiniPC_Flag;
+extern NewRxDataStruct NewRxData;     // 解析后的数据
 
 float gyro_needvalue = 0;
 
@@ -26,23 +30,23 @@ void Gimbal_YawSmall_Init(void)
   PID_PositionSetOUTRange   (&SmallYaw_GyroscopePID,-20000,20000);
 
 	PID_PositionStructureInit (&SmallYaw_SpeedPID,0);              //内环速度环
-  PID_PositionSetParameter  (&SmallYaw_SpeedPID,100,0,0);
+  PID_PositionSetParameter  (&SmallYaw_SpeedPID,60,0,0);
   PID_PositionSetOUTRange   (&SmallYaw_SpeedPID,-20000,20000);
   PID_PositionSetEkRange    (&SmallYaw_SpeedPID, -3.0f, 3.0f);
+	
+//	PID_PositionStructureInit (&SmallYaw_PositionPID,2424); 
+//  PID_PositionSetParameter  (&SmallYaw_PositionPID,40,0,0);
+//  PID_PositionSetOUTRange   (&SmallYaw_PositionPID,-20000,20000);
 }
 
 void Gimbal_YawSmall_Control(void)
 {
+	if(Remote_Status==1 && local_rc_ctrl->rc.s[1]==3){//遥控器手动控制
 		// ============获取目标角度============
 		gyro_needvalue  -= 0.0007 * local_rc_ctrl->rc.ch[2]; //-= 0.0007 * local_rc_ctrl->rc.ch[2];// = 0;
 		if(gyro_needvalue > 180) gyro_needvalue -=360 ;
 		else if(gyro_needvalue < -180) gyro_needvalue +=360 ;
-		
 		adjustAngle3(gyro_needvalue , SmallYaw_BMI088_Data.Yaw , &SmallYaw_GyroscopePID.Need_Value);
-		
-//		SmallYaw_GyroscopePID.Need_Value  -= 0.0007 * local_rc_ctrl->rc.ch[2]; //-= 0.0007 * local_rc_ctrl->rc.ch[2];// = 0;
-//		if(SmallYaw_GyroscopePID.Need_Value > 180) SmallYaw_GyroscopePID.Need_Value -=360 ;
-//		else if(SmallYaw_GyroscopePID.Need_Value < -180) SmallYaw_GyroscopePID.Need_Value +=360 ;
 		// ============角度环计算============
 		PID_PositionCalc_IMU(&SmallYaw_GyroscopePID, SmallYaw_BMI088_Data.Yaw);
 		// ============ 速度环计算 =========================
@@ -52,7 +56,28 @@ void Gimbal_YawSmall_Control(void)
 		if(Can2_M6020_MotorStatus[1].ANgle>-154 && Can2_M6020_MotorStatus[1].ANgle<-74) SmallYaw_SpeedPID.OUT=-1111;
 		// ============ 发送输出 ===========================
 //		Motor_6020_Voltage1			(0, (int16_t)SmallYaw_SpeedPID.OUT, 0, 0, &hcan2);
-	
+	}
+	else if(Remote_Status==1 && MiniPC_Flag==1 && local_rc_ctrl->rc.s[1]==1){//小电脑控制
+		
+		// ============获取目标角度============
+		gyro_needvalue  -= 0.0007 * NewRxData.data3; //-= 0.0007 * local_rc_ctrl->rc.ch[2];// = 0;
+		if(gyro_needvalue > 180) gyro_needvalue -=360 ;
+		else if(gyro_needvalue < -180) gyro_needvalue +=360 ;
+		adjustAngle3(gyro_needvalue , SmallYaw_BMI088_Data.Yaw , &SmallYaw_GyroscopePID.Need_Value);
+		// ============角度环计算============
+		PID_PositionCalc_IMU(&SmallYaw_GyroscopePID, SmallYaw_BMI088_Data.Yaw);
+		// ============ 速度环计算 =========================
+		PID_PositionSetNeedValue(&SmallYaw_SpeedPID, SmallYaw_GyroscopePID.OUT);//SmallYaw_GyroscopePID.OUT
+		PID_PositionCalc				(&SmallYaw_SpeedPID, Can2_M6020_MotorStatus[1].Speed);
+		if(Can2_M6020_MotorStatus[1].ANgle>-74 && Can2_M6020_MotorStatus[1].ANgle<8) SmallYaw_SpeedPID.OUT=1111;//两个愚蠢的办法解决超限位问题
+		if(Can2_M6020_MotorStatus[1].ANgle>-154 && Can2_M6020_MotorStatus[1].ANgle<-74) SmallYaw_SpeedPID.OUT=-1111;
+	}
+	else if(Remote_Status == 0){
+		PID_PositionClean(&SmallYaw_SpeedPID);
+		PID_PositionClean(&SmallYaw_GyroscopePID);
+		PID_PositionSetNeedValue(&SmallYaw_SpeedPID, 0);
+		
+	}
 }
 
 //简介：根据用户目标角度修正小yaw目标角度

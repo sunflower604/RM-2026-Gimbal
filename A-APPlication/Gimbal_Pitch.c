@@ -1,4 +1,5 @@
 #include "Gimbal_Pitch.h"
+#include "stm32f4xx_it.h"
 #define PITCH_MID 2424          //小yaw轴中位值
 #define PITCH_LEFT 1650          //小yaw轴左侧最大偏移
 #define PITCH_RIGHT 1650          //小yaw轴右侧最大偏移（顺时针减小）
@@ -8,13 +9,16 @@ PID_PositionInitTypedef Pitch_SpeedPID;
 extern M6020_Motor Can1_M6020_MotorStatus[7];//GM6020电机状态数组
 extern M6020_Motor Can2_M6020_MotorStatus[7];//GM6020电机状态数组
 extern RC_ctrl_t *local_rc_ctrl;
+extern uint8_t Remote_Status; 
+extern uint8_t MiniPC_Flag;
+extern NewRxDataStruct NewRxData;     // 解析后的数据
 
 
 
 void Gimbal_Pitch_Init(void)
 {
 	PID_PositionStructureInit (&Pitch_PositionPID,4074);        //外环位置环
-  PID_PositionSetParameter  (&Pitch_PositionPID,0.5,0,0);
+  PID_PositionSetParameter  (&Pitch_PositionPID,2,0,0);
   PID_PositionSetOUTRange   (&Pitch_PositionPID,-400,400);
   // PID_PositionSetNeedValueRange(&Pitch_PositionPID,4848,0);
 
@@ -26,45 +30,7 @@ void Gimbal_Pitch_Init(void)
 
 void Gimbal_Pitch_Control(void)
 {
-  
-    // ============速度环pid调节代码============
-  //  static uint32_t tick = 0;
-  //   static int i = 0;
-  //   float target_speed = 0.0f;
-
-  //   // 每 1000ms 切换一次状态（1秒）
-  //   if (HAL_GetTick() - tick > 1000) {
-  //       tick = HAL_GetTick();
-  //       i++;
-  //   }
-
-  //   // i=0: 0 RPM, i=1: +100, i=2: 0, i=3: -100, 然后循环
-  //   switch (i % 4) {
-  //       case 0: target_speed = 0.0f;    break;   // 停
-  //       case 1: target_speed = 100.0f;  break;   // 正转
-  //       case 2: target_speed = 0.0f;    break;   // 停
-  //       case 3: target_speed = 150.0f; break;   // 反转
-  //   }
-    
-    
-  //   PID_PositionSetNeedValue(&Pitch_SpeedPID, target_speed);
-  //   PID_PositionCalc(&Pitch_SpeedPID, motor_chassis[5].speed_rpm);
-    
-  //   CAN_cmd_gimbal(0, (int16_t)Pitch_SpeedPID.OUT, 0, 0);
-    // ========================
-
-
-
-
-
-
-
-
-
-
-
-
-
+	if(Remote_Status==1 && local_rc_ctrl->rc.s[1]==3){//遥控器手动控制
     // ============更新位置目标（仅打杆时）============
         Pitch_PositionPID.Need_Value -= 0.01f * local_rc_ctrl->rc.ch[3];
 
@@ -84,6 +50,36 @@ void Gimbal_Pitch_Control(void)
 
     // ============发送输出===========================
     Motor_6020_Voltage1(0, (int16_t)Pitch_SpeedPID.OUT, 0, 0, &hcan1);
+	}
+	else if(Remote_Status==1 && MiniPC_Flag==1 && local_rc_ctrl->rc.s[1]==1){//小电脑控制
+    // ============更新位置目标（仅打杆时）============
+        Pitch_PositionPID.Need_Value -= 0.01f * NewRxData.data4;
+
+        // 限幅 [0, 4848]
+        if (Pitch_PositionPID.Need_Value > 4500.0f)
+            Pitch_PositionPID.Need_Value = 4500.0f;
+        else if (Pitch_PositionPID.Need_Value < 3300.0f)
+            Pitch_PositionPID.Need_Value = 3300.0f;
+
+    // ============位置环计算=========================
+    PID_PositionCalc(&Pitch_PositionPID, Can1_M6020_MotorStatus[1].Position);
+
+
+    // ============速度环计算=========================
+    PID_PositionSetNeedValue(&Pitch_SpeedPID, Pitch_PositionPID.OUT);//
+    PID_PositionCalc(&Pitch_SpeedPID, Can1_M6020_MotorStatus[1].Speed);
+
+    // ============发送输出===========================
+    Motor_6020_Voltage1(0, (int16_t)Pitch_SpeedPID.OUT, 0, 0, &hcan1);
+		
+	}
+	else if(Remote_Status == 0){
+		PID_PositionClean(&Pitch_PositionPID);
+		PID_PositionClean(&Pitch_SpeedPID);
+		PID_PositionSetNeedValue(&Pitch_SpeedPID, 0);
+    Motor_6020_Voltage1(0, 0, 0, 0, &hcan1);
+	}
+		
 }
 
 

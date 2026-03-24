@@ -23,11 +23,11 @@ void Gimbal_PoseCalc(void)
 		//计算姿态
 		Can_BMI088_Data.Yaw = -Can_BMI088_Data.Yaw;
 		
-		BigYaw_BMI088_Data.Yaw = -(Can_BMI088_Data.Yaw + (Can2_M6020_MotorStatus[0].ANgle + 186));
+		BigYaw_BMI088_Data.Yaw = -(Can_BMI088_Data.Yaw + (Can2_M6020_MotorStatus[0].ANgle + 186));//186
 		if(BigYaw_BMI088_Data.Yaw > 180)				BigYaw_BMI088_Data.Yaw -=360;
 		else if(BigYaw_BMI088_Data.Yaw < -180)	BigYaw_BMI088_Data.Yaw +=360;
 		
-		SmallYaw_BMI088_Data.Yaw = BigYaw_BMI088_Data.Yaw + (Can2_M6020_MotorStatus[1].ANgle - 106.5f);
+		SmallYaw_BMI088_Data.Yaw = BigYaw_BMI088_Data.Yaw + (Can2_M6020_MotorStatus[1].ANgle - 106.5f);//106.5
 		if(SmallYaw_BMI088_Data.Yaw > 180)				SmallYaw_BMI088_Data.Yaw -=360;
 		else if(SmallYaw_BMI088_Data.Yaw < -180)	SmallYaw_BMI088_Data.Yaw +=360;
 	

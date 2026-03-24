@@ -9,6 +9,7 @@ extern BMI088_Init_typedef SmallYaw_BMI088_Data;
 extern M6020_Motor Can1_M6020_MotorStatus[7];//GM6020电机状态数组
 extern M6020_Motor Can2_M6020_MotorStatus[7];//GM6020电机状态数组
 extern RC_ctrl_t *local_rc_ctrl;
+extern uint8_t Remote_Status; 
 extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;
 
@@ -30,6 +31,8 @@ void Gimbal_YawBig_Init(void)
 
 void Gimbal_YawBig_Control(void)
 {
+	
+	if(Remote_Status == 1){
 //	
 //		(Can2_M6020_MotorStatus[0].ANgle - 104) = BigYaw_BMI088_Data.Yaw
 		
@@ -45,5 +48,11 @@ void Gimbal_YawBig_Control(void)
 
     // ============ 4. 发送输出 ===========================
 //    Motor_6020_Voltage1((int16_t)BigYaw_SpeedPID.OUT, 0, 0, 0, &hcan2);
-	
+	}
+	else if(Remote_Status == 0){
+		PID_PositionClean(&BigYaw_PositionPID);
+		PID_PositionClean(&BigYaw_SpeedPID);
+		PID_PositionSetNeedValue(&BigYaw_SpeedPID, 0);
+		
+	}
 }

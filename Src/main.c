@@ -90,7 +90,8 @@ extern M6020_Motor Can1_M6020_MotorStatus[7];//GM6020电机状态数组
 extern M6020_Motor Can2_M6020_MotorStatus[7];//GM6020电机状态数组
 extern M2006_Motor Can1_M2006_MotorStatus[8];//M2006电机状态数组
 extern M2006_Motor Can2_M2006_MotorStatus[8];//M2006电机状态数组
-extern RC_ctrl_t *local_rc_ctrl;		
+extern RC_ctrl_t *local_rc_ctrl;
+extern uint8_t Remote_Status;     //遥控器连接状态,默认未连接(0)	
 extern BMI088_Init_typedef BMI088_Data;
 extern BMI088_Init_typedef Can_BMI088_Data;
 extern BMI088_Init_typedef BigYaw_BMI088_Data;		//大yaw轴解算的陀螺仪数据
@@ -169,8 +170,12 @@ int main(void)
   MX_TIM5_Init();
   MX_TIM4_Init();
   MX_USART6_UART_Init();
+  MX_TIM7_Init();
+  MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
 	HAL_TIM_Base_Start_IT(&htim6);
+	HAL_TIM_Base_Start_IT(&htim7);
+	HAL_TIM_Base_Start_IT(&htim11);
   Can_Filter_Init();
 	
   Remote_Init();
@@ -199,16 +204,14 @@ int main(void)
   while (1)
   {
 		
-		
-		uint8_t send_data = 'A';
-		HAL_UART_Transmit(&huart6, &send_data, 1, 0xFFFF);
 //		RM_debug();
 		Gimbal_Warning_Remote();
 //    Gimbal_Warning_Music();
 
 		Gimbal_PoseCalc();
 		
-		
+		if(Remote_Status == 0)UART2_SendByte('0');
+		else if(Remote_Status == 1)UART2_SendByte('1');
 		// ============磁力计和陀螺仪数据============
 //		UART2_SendByte(',');
 		UART2_SendFloat_Sign(Can_BMI088_Data.Yaw,4);
