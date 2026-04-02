@@ -9,6 +9,9 @@ extern void usart1_tx_dma_init(void);
 extern void usart1_tx_dma_enable(uint8_t *data, uint16_t len);
 extern UART_HandleTypeDef huart3;
 extern DMA_HandleTypeDef hdma_usart3_rx;
+typedef struct {
+	uint8_t data[11];
+} TX_MiniPC_Struct;
 //extern uint8_t UART1_RxData;
 //extern uint8_t UART1_RxFlag;
 //extern uint8_t UART2_RxData;
@@ -33,6 +36,10 @@ void UART2_SendFloat_Sign(float value, uint8_t decimal_places);
 //void UART2_Printf(char *format,...);
 uint32_t USART_Pow(uint32_t X, uint32_t Y);
 //uint8_t UART2_GetRxFlag(void);
+void UART6_SendByte(uint8_t Byte);
+void UART6_SendString(char *String);
+void FloatsToBytesStruct(float f1, float f2, float f3, float f4, TX_MiniPC_Struct* target_struct);
+
 
 void Dbus_Dma_Init(uint8_t *rx1_buf, uint8_t *rx2_buf, uint16_t dma_buf_num);
 

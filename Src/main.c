@@ -103,6 +103,7 @@ uint8_t uart6_rx_flag = 0; // 接收完成标志（可选）
 
 
 extern float gyro_needvalue ;//用户目标角度
+extern TX_MiniPC_Struct TX_MiniPC_Data;
 
 uint8_t rx_byte;//串口中断回调函数缓冲区
 /* USER CODE END PV */
@@ -202,16 +203,25 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
-  {
+  { 
+//		FloatsToBytesStruct(SmallYaw_BMI088_Data.Yaw,
+//												Can_BMI088_Data.Gyro[0],Can_BMI088_Data.Gyro[1],Can_BMI088_Data.Gyro[2],
+//												&TX_MiniPC_Data);
+//		UART6_SendByte(0xBB);
+//		UART6_SendByte(0x77);
+//		UART6_SendString(&TX_MiniPC_Data.data[0]);
+		UART6_SendByte(0xCC);
+		UART6_SendByte(0xEE);
 		
+		
+		
+//		HAL_Delay(2000);
 //		RM_debug();
 		Gimbal_Warning_Remote();
 //    Gimbal_Warning_Music();
 
 		Gimbal_PoseCalc();
 		
-		if(Remote_Status == 0)UART2_SendByte('0');
-		else if(Remote_Status == 1)UART2_SendByte('1');
 		// ============磁力计和陀螺仪数据============
 //		UART2_SendByte(',');
 		UART2_SendFloat_Sign(Can_BMI088_Data.Yaw,4);
@@ -428,7 +438,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void RM_debug(void)
 {
   PROCESSOR(1000);
-  LED_R_Toggle();
+	if(local_rc_ctrl->rc.ch[4] >= 1)
+		local_rc_ctrl->rc.ch[4] = 0;
+	else if(local_rc_ctrl->rc.ch[4] == 0 )
+		local_rc_ctrl->rc.ch[4] = 100;
 }
 
 /* USER CODE END 4 */

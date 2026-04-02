@@ -35,8 +35,8 @@ void Gimbal_Pitch_Control(void)
         Pitch_PositionPID.Need_Value -= 0.01f * local_rc_ctrl->rc.ch[3];
 
         // 限幅 [0, 4848]
-        if (Pitch_PositionPID.Need_Value > 4500.0f)
-            Pitch_PositionPID.Need_Value = 4500.0f;
+        if (Pitch_PositionPID.Need_Value > 4000.0f)
+            Pitch_PositionPID.Need_Value = 4000.0f;
         else if (Pitch_PositionPID.Need_Value < 3300.0f)
             Pitch_PositionPID.Need_Value = 3300.0f;
 
@@ -56,8 +56,8 @@ void Gimbal_Pitch_Control(void)
         Pitch_PositionPID.Need_Value -= 0.01f * NewRxData.data4;
 
         // 限幅 [0, 4848]
-        if (Pitch_PositionPID.Need_Value > 4500.0f)
-            Pitch_PositionPID.Need_Value = 4500.0f;
+        if (Pitch_PositionPID.Need_Value > 4000.0f)
+            Pitch_PositionPID.Need_Value = 4000.0f;
         else if (Pitch_PositionPID.Need_Value < 3300.0f)
             Pitch_PositionPID.Need_Value = 3300.0f;
 

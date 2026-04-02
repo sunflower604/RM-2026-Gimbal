@@ -492,7 +492,7 @@ void DMA2_Stream7_IRQHandler(void)
 void USART6_IRQHandler(void)
 {
   /* USER CODE BEGIN USART6_IRQn 0 */
-	
+//	
   uint8_t RxByte = 0; // 临时存储当前接收字节
 	static uint8_t RxState = 0;          // 状态机：0-等待帧头1，1-等待帧头2，2-接收数据，3-校验CRC8，4-校验帧尾
 	static uint8_t RxCount = 0;          // 数据接收计数器
@@ -561,11 +561,11 @@ void USART6_IRQHandler(void)
              NewRxBuffer[14] = RxByte; // 存储帧尾字节
              if(RxByte == NEW_FRAME_TAIL2)
              {
-                 NewRxData.data1 = (uint16_t)NewRxBuffer[3] << 8 | NewRxBuffer[2];
-                 NewRxData.data2 = (uint16_t)NewRxBuffer[5] << 8 | NewRxBuffer[4];
-                 NewRxData.data3 = (uint16_t)NewRxBuffer[7] << 8 | NewRxBuffer[6];
-                 NewRxData.data4 = (uint16_t)NewRxBuffer[9] << 8 | NewRxBuffer[8];
-                 NewRxData.data5 = (uint16_t)NewRxBuffer[11] << 8 | NewRxBuffer[10];
+                 NewRxData.data1 = (int16_t)NewRxBuffer[3] << 8 | NewRxBuffer[2];
+                 NewRxData.data2 = (int16_t)NewRxBuffer[5] << 8 | NewRxBuffer[4];
+                 NewRxData.data3 = (int16_t)NewRxBuffer[7] << 8 | NewRxBuffer[6];
+                 NewRxData.data4 = (int16_t)NewRxBuffer[9] << 8 | NewRxBuffer[8];
+                 NewRxData.data5 = (int16_t)NewRxBuffer[11] << 8 | NewRxBuffer[10];
                  
                  NewRxData.numA = (NewRxBuffer[12] >> 4) & 0x0F;
                  NewRxData.numB = NewRxBuffer[12] & 0x0F;

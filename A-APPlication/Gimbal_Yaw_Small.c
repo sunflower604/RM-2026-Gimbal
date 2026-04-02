@@ -46,14 +46,16 @@ void Gimbal_YawSmall_Control(void)
 		gyro_needvalue  -= 0.0007 * local_rc_ctrl->rc.ch[2]; //-= 0.0007 * local_rc_ctrl->rc.ch[2];// = 0;
 		if(gyro_needvalue > 180) gyro_needvalue -=360 ;
 		else if(gyro_needvalue < -180) gyro_needvalue +=360 ;
-		adjustAngle3(gyro_needvalue , SmallYaw_BMI088_Data.Yaw , &SmallYaw_GyroscopePID.Need_Value);
+		SmallYaw_GyroscopePID.Need_Value = gyro_needvalue;
+		
+//		adjustAngle3(gyro_needvalue , SmallYaw_BMI088_Data.Yaw , &SmallYaw_GyroscopePID.Need_Value);
 		// ============角度环计算============
 		PID_PositionCalc_IMU(&SmallYaw_GyroscopePID, SmallYaw_BMI088_Data.Yaw);
 		// ============ 速度环计算 =========================
 		PID_PositionSetNeedValue(&SmallYaw_SpeedPID, SmallYaw_GyroscopePID.OUT);//SmallYaw_GyroscopePID.OUT
 		PID_PositionCalc				(&SmallYaw_SpeedPID, Can2_M6020_MotorStatus[1].Speed);
-		if(Can2_M6020_MotorStatus[1].ANgle>-74 && Can2_M6020_MotorStatus[1].ANgle<8) SmallYaw_SpeedPID.OUT=1111;//两个愚蠢的办法解决超限位问题
-		if(Can2_M6020_MotorStatus[1].ANgle>-154 && Can2_M6020_MotorStatus[1].ANgle<-74) SmallYaw_SpeedPID.OUT=-1111;
+//		if(Can2_M6020_MotorStatus[1].ANgle>-74 && Can2_M6020_MotorStatus[1].ANgle<8) SmallYaw_SpeedPID.OUT=1111;//两个愚蠢的办法解决超限位问题
+//		if(Can2_M6020_MotorStatus[1].ANgle>-154 && Can2_M6020_MotorStatus[1].ANgle<-74) SmallYaw_SpeedPID.OUT=-1111;
 		// ============ 发送输出 ===========================
 //		Motor_6020_Voltage1			(0, (int16_t)SmallYaw_SpeedPID.OUT, 0, 0, &hcan2);
 	}
@@ -93,26 +95,28 @@ static void adjustAngle3(float angle1, float angle2, float *angle3) {
         diff += 360.0f;
     }
 
-    // 2. 判断angle1是否在angle2的±70°范围内，调整angle3
-    if (fabs(diff) < 70.0f) {
-        // 在范围内：angle3 = angle1
-        *angle3 = angle1;
-    } else {
-        // 超出范围：angle3 = angle1靠近的angle2边界（angle2±70°）
-        if (diff > 0) {
-            // diff为正 → angle1在angle2右侧，靠近的边界是angle2 + 70°
-            *angle3 = angle2 + 70.0f;
-        } else {
-            // diff为负 → angle1在angle2左侧，靠近的边界是angle2 - 70°
-            *angle3 = angle2 - 70.0f;
-        }
+		
+		*angle3 = angle1;
+//    // 2. 判断angle1是否在angle2的±70°范围内，调整angle3
+//    if (fabs(diff) < 70.0f) {
+//        // 在范围内：angle3 = angle1
+//        *angle3 = angle1;
+//    } else {
+//        // 超出范围：angle3 = angle1靠近的angle2边界（angle2±70°）
+//        if (diff > 0) {
+//            // diff为正 → angle1在angle2右侧，靠近的边界是angle2 + 70°
+//            *angle3 = angle2 + 70.0f;
+//        } else {
+//            // diff为负 → angle1在angle2左侧，靠近的边界是angle2 - 70°
+//            *angle3 = angle2 - 70.0f;
+//        }
 
-        // 3. 将调整后的angle3归一化到-180~180°（避免超出范围）
-        *angle3 = fmod(*angle3, 360.0f);
-        if (*angle3 > 180.0f) {
-            *angle3 -= 360.0f;
-        } else if (*angle3 < -180.0f) {
-            *angle3 += 360.0f;
-        }
-    }
+//        // 3. 将调整后的angle3归一化到-180~180°（避免超出范围）
+//        *angle3 = fmod(*angle3, 360.0f);
+//        if (*angle3 > 180.0f) {
+//            *angle3 -= 360.0f;
+//        } else if (*angle3 < -180.0f) {
+//            *angle3 += 360.0f;
+//        }
+//    }
 }

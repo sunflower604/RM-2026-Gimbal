@@ -1,7 +1,15 @@
 #include "bsp_usart.h"
 
+#define NEW_FRAME_HEADER1    0xBB    // 自定义帧头1，可根据实际需求修改
+#define NEW_FRAME_HEADER2    0x77    // 自定义帧头2，可根据实际需求修改
+#define NEW_FRAME_TAIL1			 0xCC
+#define NEW_FRAME_TAIL2      0xEE    // 自定义帧尾，可根据实际需求修改
+
+TX_MiniPC_Struct TX_MiniPC_Data;
 extern UART_HandleTypeDef huart1;
 extern DMA_HandleTypeDef hdma_usart1_tx;
+
+
 void usart1_tx_dma_init(void)
 {
     //enable the DMA transfer for the receiver request
@@ -131,3 +139,49 @@ void Dbus_Dma_Init(uint8_t *rx1_buf, uint8_t *rx2_buf, uint16_t dma_buf_num)
     __HAL_DMA_ENABLE(&hdma_usart3_rx);
 }
 
+void UART6_SendByte(uint8_t Byte)
+{
+		HAL_UART_Transmit(&huart6, &Byte, 1, 0xFFFF);
+}
+
+void UART6_SendString(char *String)
+{
+	for(uint8_t i=0;String[i]!='\0';i++)
+		UART2_SendByte(String[i]);//依次发送字符串的每一位
+}
+
+void FloatsToBytesStruct(float f1, float f2, float f3, float f4, TX_MiniPC_Struct* target_struct)
+{
+    // 清空整个结构体数组，确保后面不需要填充的字节为0
+    for(int i = 0; i < 11; i++) {
+        target_struct->data[i] = 0;
+    }
+
+    // 使用联合体（Union）来访问float的字节，这是一种安全且高效的方法
+    union {
+        float f;
+        uint8_t b[4];
+    } converter;
+
+    // --- 处理第一个float ---
+    converter.f = f1;
+    target_struct->data[0] = converter.b[0]; // 低字节
+    target_struct->data[1] = converter.b[1]; // 高字节
+
+    // --- 处理第二个float ---
+    converter.f = f2;
+    target_struct->data[2] = converter.b[0];
+    target_struct->data[3] = converter.b[1];
+
+    // --- 处理第三个float ---
+    converter.f = f3;
+    target_struct->data[4] = converter.b[0];
+    target_struct->data[5] = converter.b[1];
+
+    // --- 处理第四个float ---
+    converter.f = f4;
+    target_struct->data[6] = converter.b[0];
+    target_struct->data[7] = converter.b[1];
+
+    // 数组的第8到10个位置(data[8], data[9], data[10]) 已经在开头被初始化为 0 了
+}

@@ -35,11 +35,11 @@ extern "C" {
 /* USER CODE BEGIN ET */
 
 typedef struct {
-    uint16_t data1; // 字节3-4						//右摇杆左右
-		uint16_t data2;	// 字节5-6						//右摇杆上下
-		uint16_t data3;	// 字节7-8						//左摇杆左右
-		uint16_t data4;	// 字节9-10						//左摇杆上下
-		uint16_t data5;	// 字节11-12					//波轮
+    int16_t data1; // 字节3-4						//右摇杆左右
+		int16_t data2;	// 字节5-6						//右摇杆上下
+		int16_t data3;	// 字节7-8						//左摇杆左右
+		int16_t data4;	// 字节9-10						//左摇杆上下
+		int16_t data5;	// 字节11-12					//波轮
 		uint8_t  numA; 	// 字节13高4位（1/2/3）//左拨杆
 		uint8_t  numB; 	// 字节13低4位（1/2/3）//右拨杆
 
